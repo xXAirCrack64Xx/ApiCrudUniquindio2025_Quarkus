@@ -1,39 +1,41 @@
 package co.uniquindio.crud.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
-public class UsuarioDTO {
+public record UsuarioDTO (
 
-    // Campo id de solo lectura (opcional incluirlo)
-    public Long id;
+        Long id,
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 3, max = 50)
-    public String nombre;
+        @NotNull(message = "El nombre es obligatorio")
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(min = 3, max = 50, message = "el nombre debe tener entre 3 y 50 caracteres")
+        String nombre,
 
-    @NotBlank(message = "La cédula es obligatoria")
-    @Size(min = 5, max = 10)
-    @Pattern(regexp = "^\\d+$", message = "La cédula debe contener solo dígitos")
-    public String cedula;
+        @NotNull(message = "La cédula es obligatoria")
+        @NotBlank(message = "La cédula es obligatoria")
+        @Size(min = 5, max = 10)
+        @Pattern(regexp = "^\\d+$", message = "La cédula debe contener solo dígitos")
+        String cedula,
 
-    @NotBlank(message = "El email es obligatorio")
-    @Size(max = 50)
-    @Email(message = "El email no es válido")
-    public String email;
+        @NotNull(message = "El email es obligatorio")
+        @NotBlank(message = "El email es obligatorio")
+        @Size(min = 6 ,max = 50, message = "el email debe tener entre 6 y 50 caracteres")
+        @Email(message = "El email no es válido")
+        String email,
 
-    @NotBlank(message = "El rol es obligatorio")
-    @Pattern(regexp = "ESTUDIANTE|PROFESOR", message = "El rol debe ser ESTUDIANTE o PROFESOR")
-    public String rol;
+        @NotNull(message = "La ocupación es obligatoria")
+        @NotBlank(message = "La ocupación es obligatoria")
+        @Pattern(regexp = "ESTUDIANTE|PROFESOR", message = "La ocupación debe ser ESTUDIANTE o PROFESOR")
+        String ocupacion,
 
-    @Size(max = 50)
-    public String clase;
+        @Size(max = 50, message = "la clase maximo puede contener 50 caracteres")
+        String clase,
 
-    @NotBlank(message = "La clave es obligatoria")
-    @Size(min = 5, max = 20)
-    public String clave;
+        @NotNull(message = "La clave es obligatoria")
+        @NotBlank(message = "La clave es obligatoria")
+        @Size(min = 5, max = 20)
+        String clave
+) {
 }
 
 

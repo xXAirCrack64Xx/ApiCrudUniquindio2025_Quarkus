@@ -1,10 +1,14 @@
 package co.uniquindio.crud.dto;
 
-public class UsuarioResponseDTO {
+import java.time.LocalDateTime;
 
-    public Long id;
-    public String nombre;
-    public String email;
-    public String clase;
+public record UsuarioResponseDTO (
+        Long id,
+        String nombre,
+        String email,
+        String clase,
+        LocalDateTime fechaCreacion,
+        LocalDateTime fechaActualizacion
+){
 }
 
