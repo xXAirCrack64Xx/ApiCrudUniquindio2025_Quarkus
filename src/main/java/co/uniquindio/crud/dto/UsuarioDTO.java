@@ -33,7 +33,7 @@ public record UsuarioDTO (
 
         @NotNull(message = "La clave es obligatoria")
         @NotBlank(message = "La clave es obligatoria")
-        @Size(min = 5, max = 20)
+        @Size(min = 8, max = 20)
         String clave
 ) {
 }

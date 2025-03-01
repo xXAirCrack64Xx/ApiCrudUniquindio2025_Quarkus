@@ -12,6 +12,7 @@ import co.uniquindio.crud.exception.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
@@ -180,6 +181,7 @@ public class UsuarioService {
         return mapToDTO(usuario);
     }
 
+    @Transactional
     public void deleteUsuario(Long id) {
         log.info("Eliminando usuario con ID: {}", id);
 
@@ -197,7 +199,10 @@ public class UsuarioService {
 
     private UsuarioResponseDTO mapToDTO(Usuario usuario) {
         return new UsuarioResponseDTO(usuario.getId(), usuario.getNombre(),
-                usuario.getEmail(), usuario.getClase(), usuario.getFechaCreacion(), usuario.getFechaActualizacion());
+                usuario.getEmail(),
+                usuario.getClase(),
+                usuario.getFechaCreacion(),
+                usuario.getFechaActualizacion());
     }
 
 }

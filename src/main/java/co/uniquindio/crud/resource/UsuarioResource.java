@@ -101,13 +101,18 @@ public class UsuarioResource {
                     schema = @Schema(implementation = Long.class),
                     examples = @ExampleObject(value = "1")
             )
-            @PathParam("id") Long id) {
+            @PathParam("id") String id) {
         log.info("Iniciando consulta de usuario con ID: {}", id);
         try {
-            UsuarioResponseDTO responseDTO = usuarioService.getUsuarioById(id);
+            long idUser = validarYConvertirParametro(id, "Id");
+            UsuarioResponseDTO responseDTO = usuarioService.getUsuarioById(idUser);
             log.info("Consulta exitosa para el usuario con ID: {}", id);
             return Response.ok(responseDTO).build();
-        } catch (Exception e) {
+        }catch (NumberFormatException e){
+            log.error("ID inválido: {}", id);
+            throw new ParametrosInvalidosException("El ID debe ser un número válido.");
+        }
+        catch (Exception e) {
             log.error("Error al consultar el usuario con ID: {}", id, e);
             throw e; // El manejador de excepciones global se encargará de esto
         }
