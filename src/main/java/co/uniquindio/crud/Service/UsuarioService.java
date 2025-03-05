@@ -3,6 +3,7 @@ package co.uniquindio.crud.Service;
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
 import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
+import co.uniquindio.crud.entity.EstadoCuenta;
 import co.uniquindio.crud.entity.OcupacionUsuario;
 import co.uniquindio.crud.entity.RolUsuario;
 import co.uniquindio.crud.entity.Usuario;
@@ -30,7 +31,7 @@ public class UsuarioService {
 
     public UsuarioResponseDTO getUsuarioById(Long id) {
         log.info("Buscando usuario con ID: {}", id);
-        Usuario usuario = usuarioRepository.findById(id);
+        Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
             log.warn("Usuario no encontrado con ID: {}", id);
             throw new UsuarioNotFoundException(id);
@@ -43,7 +44,7 @@ public class UsuarioService {
         log.info("Obteniendo usuarios paginados - Página: {}, Tamaño: {}", page, size);
 
         // Obtener usuarios paginados
-        List<Usuario> usuarios = usuarioRepository.findAll().page(page - 1, size).list();
+        List<Usuario> usuarios = usuarioRepository.findActiveUsersPaged(page - 1, size);
 
         // Obtener conteo total de usuarios
         long totalUsuarios = usuarioRepository.count();
@@ -90,6 +91,7 @@ public class UsuarioService {
         nuevoUsuario.setEmail(usuarioDTO.email());
         nuevoUsuario.setOcupacion(OcupacionUsuario.valueOf(usuarioDTO.ocupacion()));
         nuevoUsuario.setRol(RolUsuario.GUEST);
+        nuevoUsuario.setEstadoCuenta(EstadoCuenta.REGISTRADA);
         nuevoUsuario.setClase(usuarioDTO.clase());
         nuevoUsuario.setClave(claveEncriptada);
         nuevoUsuario.setFechaCreacion(LocalDateTime.now()); // Fecha de creación
@@ -106,7 +108,7 @@ public class UsuarioService {
         log.info("Actualizando usuario con ID: {}", id);
 
         // Buscar el usuario por ID
-        Usuario usuario = usuarioRepository.findById(id);
+        Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
             log.warn("Usuario no encontrado con ID: {}", id);
             throw new UsuarioNotFoundException(id);
@@ -136,8 +138,8 @@ public class UsuarioService {
     }
 
     public UsuarioResponseDTO partialUpdateUsuario(Long id, UsuarioDTO dto) {
-        Usuario usuario = usuarioRepository.findByIdOptional(id)
-                .orElseThrow(() -> new UsuarioNotFoundException(id));
+        Usuario usuario = usuarioRepository.findActiveById(id);
+        if (usuario == null) throw new UsuarioNotFoundException(id);
 
         boolean needsUpdate = false;
 
@@ -186,14 +188,14 @@ public class UsuarioService {
         log.info("Eliminando usuario con ID: {}", id);
 
         // Buscar el usuario por ID
-        Usuario usuario = usuarioRepository.findById(id);
+        Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
             log.warn("Usuario no encontrado con ID: {}", id);
             throw new UsuarioNotFoundException(id);
         }
-
+        usuario.setEstadoCuenta(EstadoCuenta.ELIMINADA);
         // Eliminar el usuario
-        usuarioRepository.delete(usuario);
+        usuarioRepository.persist(usuario);
         log.info("Usuario eliminado exitosamente con ID: {}", id);
     }
 
@@ -202,7 +204,9 @@ public class UsuarioService {
                 usuario.getEmail(),
                 usuario.getClase(),
                 usuario.getFechaCreacion(),
-                usuario.getFechaActualizacion());
+                usuario.getFechaActualizacion(),
+                usuario.getEstadoCuenta())
+                ;
     }
 
 }

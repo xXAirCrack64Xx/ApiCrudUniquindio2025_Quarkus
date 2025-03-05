@@ -39,7 +39,8 @@ public class Usuario extends PanacheEntityBase {
     @Enumerated(EnumType.STRING)
     private RolUsuario rol;
 
-    private boolean cuentaActivada = false;
+    @Enumerated(EnumType.STRING)
+    private EstadoCuenta estadoCuenta;
 
     @Size(max = 50)
     private String clase;

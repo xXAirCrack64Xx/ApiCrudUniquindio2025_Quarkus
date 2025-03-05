@@ -1,5 +1,7 @@
 package co.uniquindio.crud.dto;
 
+import co.uniquindio.crud.entity.EstadoCuenta;
+
 import java.time.LocalDateTime;
 
 public record UsuarioResponseDTO (
@@ -8,7 +10,7 @@ public record UsuarioResponseDTO (
         String email,
         String clase,
         LocalDateTime fechaCreacion,
-        LocalDateTime fechaActualizacion
-){
+        LocalDateTime fechaActualizacion,
+        EstadoCuenta estadoCuenta) {
 }
 
