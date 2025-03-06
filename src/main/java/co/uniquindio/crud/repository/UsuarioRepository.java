@@ -10,10 +10,6 @@ import java.util.Optional;
 @ApplicationScoped
 public class UsuarioRepository implements PanacheRepository<Usuario> {
 
-    public List<Usuario> findAllActiveUsers() {
-        return list("estadoCuenta <> ?1", EstadoCuenta.ELIMINADA);
-    }
-
     public Usuario findActiveById(Long id) {
         return find("id = ?1 and estadoCuenta <> ?2", id, EstadoCuenta.ELIMINADA).firstResult();
     }

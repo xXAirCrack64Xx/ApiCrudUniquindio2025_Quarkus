@@ -1,4 +1,4 @@
-package co.uniquindio.crud.exceptionHandler;
+package co.uniquindio.crud.exceptionhandler;
 
 import co.uniquindio.crud.dto.ErrorResponse;
 import jakarta.ws.rs.core.Response;

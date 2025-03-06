@@ -1,10 +1,9 @@
 package co.uniquindio.crud.resource;
 
-import co.uniquindio.crud.Service.UsuarioService;
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
 import co.uniquindio.crud.exception.ParametrosInvalidosException;
+import co.uniquindio.crud.service.implementations.UsuarioServiceImplemets;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
@@ -22,9 +21,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.net.URI;
-import java.util.List;
 
-import co.uniquindio.crud.entity.Usuario;
 import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
 import co.uniquindio.crud.dto.ErrorResponse;
@@ -37,7 +34,7 @@ import co.uniquindio.crud.dto.ErrorResponse;
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
 public class UsuarioResource {
 
-    private final UsuarioService usuarioService;
+    private final UsuarioServiceImplemets usuarioService;
 
     @GET
     @Path("/{id}")

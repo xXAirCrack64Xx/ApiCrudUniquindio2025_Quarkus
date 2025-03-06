@@ -1,16 +1,17 @@
-package co.uniquindio.crud.Service;
+package co.uniquindio.crud.service.implementations;
 
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
 import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
 import co.uniquindio.crud.entity.EstadoCuenta;
 import co.uniquindio.crud.entity.OcupacionUsuario;
-import co.uniquindio.crud.entity.RolUsuario;
 import co.uniquindio.crud.entity.Usuario;
 import co.uniquindio.crud.exception.NoUsuariosRegistradosException;
 import co.uniquindio.crud.exception.UsuarioNotFoundException;
 import co.uniquindio.crud.exception.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
+import co.uniquindio.crud.service.UsuarioMapper;
+import co.uniquindio.crud.service.interfaces.UsuarioService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -25,9 +26,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
-public class UsuarioService {
+public class UsuarioServiceImplemets implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioMapper usuarioMapper;
 
     public UsuarioResponseDTO getUsuarioById(Long id) {
         log.info("Buscando usuario con ID: {}", id);
@@ -37,7 +39,7 @@ public class UsuarioService {
             throw new UsuarioNotFoundException(id);
         }
         log.info("Usuario encontrado: {}", usuario);
-        return mapToDTO(usuario);
+        return usuarioMapper.mapToDTO(usuario);
     }
 
     public PaginacionResponseDTO getAllUsuariosPaginados(int page, int size) {
@@ -57,7 +59,7 @@ public class UsuarioService {
 
         // Mapear a DTO
         List<UsuarioResponseDTO> usuariosDTO = usuarios.stream()
-                .map(this::mapToDTO)
+                .map(usuarioMapper::mapToDTO)
                 .collect(Collectors.toList());
 
         // Construir respuesta de paginación
@@ -85,24 +87,15 @@ public class UsuarioService {
         // Encriptar la contraseña
         String claveEncriptada = BCrypt.hashpw(usuarioDTO.clave(), BCrypt.gensalt());
 
-        // Crear el nuevo usuario
-        Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setNombre(usuarioDTO.nombre());
-        nuevoUsuario.setCedula(usuarioDTO.cedula());
-        nuevoUsuario.setEmail(usuarioDTO.email());
-        nuevoUsuario.setOcupacion(OcupacionUsuario.valueOf(usuarioDTO.ocupacion()));
-        nuevoUsuario.setRol(RolUsuario.GUEST);
-        nuevoUsuario.setEstadoCuenta(EstadoCuenta.REGISTRADA);
-        nuevoUsuario.setClase(usuarioDTO.clase());
-        nuevoUsuario.setClave(claveEncriptada);
-        nuevoUsuario.setFechaCreacion(LocalDateTime.now()); // Fecha de creación
+        // Convertir de DTO a entidad usando el mapper
+        Usuario nuevoUsuario = usuarioMapper.mapToEntity(usuarioDTO, claveEncriptada);
 
         // Guardar el usuario en la base de datos
         usuarioRepository.persist(nuevoUsuario);
         log.info("Usuario creado exitosamente con ID: {}", nuevoUsuario.getId());
 
         // Mapear a DTO de respuesta
-        return mapToDTO(nuevoUsuario);
+        return usuarioMapper.mapToDTO(nuevoUsuario);
     }
 
     @Transactional
@@ -123,20 +116,15 @@ public class UsuarioService {
             throw new UsuarioYaExisteException("Ya existe un usuario con el correo " + usuarioDTO.email());
         }
 
-        // Actualizar los datos del usuario
-        usuario.setNombre(usuarioDTO.nombre());
-        usuario.setCedula(usuarioDTO.cedula());
-        usuario.setEmail(usuarioDTO.email());
-        usuario.setOcupacion(OcupacionUsuario.valueOf(usuarioDTO.ocupacion()));
-        usuario.setClase(usuarioDTO.clase());
-        usuario.setFechaActualizacion(LocalDateTime.now()); // Fecha de actualización
+        // Actualizar los datos del usuario usando el mapper
+        usuarioMapper.updateEntity(usuarioDTO, usuario);
 
         // Guardar los cambios
         usuarioRepository.persist(usuario);
         log.info("Usuario actualizado exitosamente con ID: {}", usuario.getId());
 
         // Mapear a DTO de respuesta
-        return mapToDTO(usuario);
+        return usuarioMapper.mapToDTO(usuario);
     }
 
     @Transactional
@@ -183,7 +171,7 @@ public class UsuarioService {
             log.info("Usuario ID: {} actualizado parcialmente", id);
         }
 
-        return mapToDTO(usuario);
+        return usuarioMapper.mapToDTO(usuario);
     }
 
     @Transactional
@@ -200,16 +188,6 @@ public class UsuarioService {
         // Eliminar el usuario
         usuarioRepository.persist(usuario);
         log.info("Usuario eliminado exitosamente con ID: {}", id);
-    }
-
-    private UsuarioResponseDTO mapToDTO(Usuario usuario) {
-        return new UsuarioResponseDTO(usuario.getId(), usuario.getNombre(),
-                usuario.getEmail(),
-                usuario.getClase(),
-                usuario.getFechaCreacion(),
-                usuario.getFechaActualizacion(),
-                usuario.getEstadoCuenta())
-                ;
     }
 
 }
