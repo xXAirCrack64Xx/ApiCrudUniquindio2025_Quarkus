@@ -46,7 +46,6 @@ public class Usuario extends PanacheEntityBase {
     private String clase;
 
     @NotBlank
-    @Size(min = 8, max = 20)
     private String clave;
 
     private LocalDateTime fechaCreacion;

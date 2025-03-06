@@ -44,7 +44,7 @@ public class UsuarioService {
         log.info("Obteniendo usuarios paginados - Página: {}, Tamaño: {}", page, size);
 
         // Obtener usuarios paginados
-        List<Usuario> usuarios = usuarioRepository.findActiveUsersPaged(page - 1, size);
+        List<Usuario> usuarios = usuarioRepository.findActiveUsersPaged(page, size);
 
         // Obtener conteo total de usuarios
         long totalUsuarios = usuarioRepository.count();
@@ -66,6 +66,7 @@ public class UsuarioService {
         return response;
     }
 
+    @Transactional
     public UsuarioResponseDTO createUsuario(UsuarioDTO usuarioDTO) {
         log.info("Creando usuario con email: {} y cédula: {}", usuarioDTO.email(), usuarioDTO.cedula());
 
@@ -104,6 +105,7 @@ public class UsuarioService {
         return mapToDTO(nuevoUsuario);
     }
 
+    @Transactional
     public UsuarioResponseDTO updateUsuario(Long id, UsuarioDTO usuarioDTO) {
         log.info("Actualizando usuario con ID: {}", id);
 
@@ -137,6 +139,7 @@ public class UsuarioService {
         return mapToDTO(usuario);
     }
 
+    @Transactional
     public UsuarioResponseDTO partialUpdateUsuario(Long id, UsuarioDTO dto) {
         Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) throw new UsuarioNotFoundException(id);
