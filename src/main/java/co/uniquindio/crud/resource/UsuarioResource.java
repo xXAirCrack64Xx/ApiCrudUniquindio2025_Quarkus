@@ -2,7 +2,7 @@ package co.uniquindio.crud.resource;
 
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
 import co.uniquindio.crud.exception.ParametrosInvalidosException;
-import co.uniquindio.crud.service.implementations.UsuarioServiceImplemets;
+import co.uniquindio.crud.service.implementations.UsuarioServiceImplements;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -34,7 +34,7 @@ import co.uniquindio.crud.dto.ErrorResponse;
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
 public class UsuarioResource {
 
-    private final UsuarioServiceImplemets usuarioService;
+    private final UsuarioServiceImplements usuarioService;
 
     @GET
     @Path("/{id}")
