@@ -7,12 +7,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.jboss.resteasy.reactive.DateFormat;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
-@Entity
+
+@EqualsAndHashCode(callSuper = true)
 @Data
+@Accessors(chain = true)
+@Entity
+@Access(AccessType.FIELD)  // <--- Indicar acceso a nivel de campos
 public class Usuario extends PanacheEntityBase {
 
     @Id

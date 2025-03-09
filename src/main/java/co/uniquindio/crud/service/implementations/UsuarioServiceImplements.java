@@ -10,15 +10,13 @@ import co.uniquindio.crud.exception.NoUsuariosRegistradosException;
 import co.uniquindio.crud.exception.UsuarioNotFoundException;
 import co.uniquindio.crud.exception.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
-import co.uniquindio.crud.service.UsuarioMapper;
+import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.mindrot.jbcrypt.BCrypt;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +37,7 @@ public class UsuarioServiceImplements implements UsuarioService {
             throw new UsuarioNotFoundException(id);
         }
         log.info("Usuario encontrado: {}", usuario);
-        return usuarioMapper.mapToDTO(usuario);
+        return usuarioMapper.toResponseDTO(usuario);
     }
 
     public PaginacionResponseDTO getAllUsuariosPaginados(int page, int size) {
@@ -59,7 +57,7 @@ public class UsuarioServiceImplements implements UsuarioService {
 
         // Mapear a DTO
         List<UsuarioResponseDTO> usuariosDTO = usuarios.stream()
-                .map(usuarioMapper::mapToDTO)
+                .map(usuarioMapper::toResponseDTO)
                 .collect(Collectors.toList());
 
         // Construir respuesta de paginación
@@ -84,18 +82,15 @@ public class UsuarioServiceImplements implements UsuarioService {
             throw new UsuarioYaExisteException("Ya existe un usuario registrado con la cédula " + usuarioDTO.cedula());
         }
 
-        // Encriptar la contraseña
-        String claveEncriptada = BCrypt.hashpw(usuarioDTO.clave(), BCrypt.gensalt());
-
         // Convertir de DTO a entidad usando el mapper
-        Usuario nuevoUsuario = usuarioMapper.mapToEntity(usuarioDTO, claveEncriptada);
+        Usuario nuevoUsuario = usuarioMapper.toEntity(usuarioDTO);
 
         // Guardar el usuario en la base de datos
         usuarioRepository.persist(nuevoUsuario);
         log.info("Usuario creado exitosamente con ID: {}", nuevoUsuario.getId());
 
         // Mapear a DTO de respuesta
-        return usuarioMapper.mapToDTO(nuevoUsuario);
+        return usuarioMapper.toResponseDTO(nuevoUsuario);
     }
 
     @Transactional
@@ -117,14 +112,14 @@ public class UsuarioServiceImplements implements UsuarioService {
         }
 
         // Actualizar los datos del usuario usando el mapper
-        usuarioMapper.updateEntity(usuarioDTO, usuario);
+        usuarioMapper.updateEntityFromDTO(usuarioDTO, usuario);
 
         // Guardar los cambios
         usuarioRepository.persist(usuario);
         log.info("Usuario actualizado exitosamente con ID: {}", usuario.getId());
 
         // Mapear a DTO de respuesta
-        return usuarioMapper.mapToDTO(usuario);
+        return usuarioMapper.toResponseDTO(usuario);
     }
 
     @Transactional
@@ -171,7 +166,7 @@ public class UsuarioServiceImplements implements UsuarioService {
             log.info("Usuario ID: {} actualizado parcialmente", id);
         }
 
-        return usuarioMapper.mapToDTO(usuario);
+        return usuarioMapper.toResponseDTO(usuario);
     }
 
     @Transactional
