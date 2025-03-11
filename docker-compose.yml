@@ -1,0 +1,37 @@
+services:
+  database:
+    image: mysql:9.2.0
+    container_name: crud_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 31415999
+      MYSQL_DATABASE: principal_database
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - quarkus_network
+
+  api:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: quarkus_api
+    depends_on:
+      - database
+    environment:
+      # Variables de entorno para conectar a MySQL
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:mysql://database:3306/principal_database?useSSL=false&allowPublicKeyRetrieval=true
+      QUARKUS_DATASOURCE_USERNAME: root
+      QUARKUS_DATASOURCE_PASSWORD: 31415999
+    ports:
+      - "9090:9090"
+    networks:
+      - quarkus_network
+
+networks:
+  quarkus_network:
+
+volumes:
+  mysql_data:
