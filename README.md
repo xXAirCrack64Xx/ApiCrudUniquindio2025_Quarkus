@@ -32,6 +32,11 @@ If you want to build an _über-jar_, execute the following command:
 ```shell script
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
 ```
+If you want to build a Docker-Compose, execute the following command:
+
+```shell script
+.docker-compose up -d --build  
+```
 
 The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
 
