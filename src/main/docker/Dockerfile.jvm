@@ -1,16 +1,25 @@
-# Usa la imagen base de OpenJDK 21
-FROM amazoncorretto:21
+# Usa la imagen de Maven con JDK 21 como base para la compilación
+FROM maven:3.9.5-eclipse-temurin-21 AS builder
 
-# Crea un directorio de trabajo
+# Crea y define el directorio de trabajo
 WORKDIR /app
 
-# Copia el archivo JAR generado en la carpeta target
+# Segunda etapa: Ejecutar en una imagen ligera de Amazon Corretto 21
+FROM amazoncorretto:21
+
+# Define el directorio de trabajo en la imagen final
+WORKDIR /app
+
+# Copia el JAR generado desde la imagen de compilación
 COPY target/ApiCrudUniquindio2025_Quarkus-1.0.0-SNAPSHOT-runner.jar app.jar
 
 # Expone el puerto en el que corre Quarkus
 EXPOSE 9090
 
 # Comando para ejecutar la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]
+
+
+
 
 
