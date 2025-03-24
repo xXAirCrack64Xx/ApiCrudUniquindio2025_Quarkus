@@ -12,6 +12,7 @@ import co.uniquindio.crud.exception.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -66,7 +67,7 @@ public class UsuarioServiceImplements implements UsuarioService {
         return response;
     }
 
-    @Transactional
+    @Transactional //CAMBIAR LA VALIDACION DEL CORREO Y CEDULA, TOMA LOS USUARIOS ELIMINADOS TAMBIEN
     public UsuarioResponseDTO createUsuario(UsuarioDTO usuarioDTO) {
         log.info("Creando usuario con email: {} y cédula: {}", usuarioDTO.email(), usuarioDTO.cedula());
 

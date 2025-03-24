@@ -3,6 +3,8 @@ package co.uniquindio.crud.resource;
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
 import co.uniquindio.crud.exception.ParametrosInvalidosException;
 import co.uniquindio.crud.service.implementations.UsuarioServiceImplements;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -26,7 +28,7 @@ import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
 import co.uniquindio.crud.dto.ErrorResponse;
 
-@Path("/api/usuarios")
+@Path("/api/v1/usuarios")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Usuarios", description = "Endpoints para gestionar usuarios: creación, consulta, actualización y eliminación.")
@@ -231,6 +233,7 @@ public class UsuarioResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @PermitAll
     @Operation(
             summary = "Crear un nuevo usuario",
             description = "Crea un nuevo usuario con los datos proporcionados. La contraseña se encripta antes de guardarla."
@@ -510,6 +513,7 @@ public class UsuarioResource {
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed("ADMIN")
     @Operation(
             summary = "Eliminar un usuario",
             description = "Elimina un usuario existente. El ID debe ser un número válido."
