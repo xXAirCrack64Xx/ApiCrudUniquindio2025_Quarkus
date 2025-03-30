@@ -8,34 +8,55 @@ import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.jboss.logging.Logger; // Cambio clave aquí
 
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Servicio encargado de mapear los roles y otros atributos del usuario autenticado.
+ * <p>
+ * Integra con el sistema de logging nativo de Quarkus para registrar operaciones
+ * críticas de seguridad.
+ * </p>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
-@Slf4j
 public class RoleMapperService {
+
+    private static final Logger log = Logger.getLogger(RoleMapperService.class);
+    private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
 
     private final UsuarioRepository usuarioRepository;
 
-
+    /**
+     * Mapea los roles y otros atributos personalizados de un usuario autenticado.
+     *
+     * @param identity Identidad de seguridad de Quarkus.
+     * @return Nueva identidad con los roles y claims actualizados.
+     */
     public SecurityIdentity mapRoles(SecurityIdentity identity) {
-        // Extraer el email del token (asegúrate de que el claim email esté disponible)
         String email = identity.getPrincipal().getName();
-        // Buscar el usuario en la base de datos
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario con el correo: " + email + " no encontrado"));
+        log.infov("Asignando roles y claims para usuario: {0}", email);
 
-        // Crear una colección modificable con los roles actuales y agregar el rol del usuario
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> {
+            log.warnv("Usuario no encontrado: {0}", email);
+            return new UsuarioNotFoundException("Usuario no encontrado: " + email);
+        });
+
         Set<String> newRoles = new HashSet<>(identity.getRoles());
-        newRoles.add(usuario.getRol().name());
+        if (!newRoles.add(usuario.getRol().name())) {
+            log.debugv("Usuario {0} ya tenía rol {1}", email, usuario.getRol().name());
+        } else {
+            log.infov("Rol {0} agregado a usuario {1}", usuario.getRol().name(), email);
+        }
 
-        // Construir una nueva identidad usando el builder de QuarkusSecurityIdentity
+        AUDIT_LOGGER.infov("AUDIT: Mapeo de roles | Usuario: {0} | Rol: {1}",
+                email, usuario.getRol().name());
+
         return QuarkusSecurityIdentity.builder(identity)
                 .addRoles(newRoles)
+                .addAttribute("ocupacion", usuario.getOcupacion())
                 .build();
     }
-
 }

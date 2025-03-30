@@ -12,178 +12,236 @@ import co.uniquindio.crud.exception.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
+import lombok.RequiredArgsConstructor;
+import org.jboss.logging.Logger; // Cambio clave aquí
+
+/**
+ * Servicio para la gestión de usuarios.
+ * <p>
+ * Implementa las operaciones CRUD para usuarios, gestionando la validación, conversión y persistencia de datos.
+ * Se utiliza <strong>JBoss Logging</strong> (logging nativo de Quarkus) para el registro de logs generales
+ * y auditoría de operaciones sensibles.
+ * </p>
+ */
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
 public class UsuarioServiceImplements implements UsuarioService {
 
+    private static final Logger LOGGER = Logger.getLogger(UsuarioServiceImplements.class);
+    private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
+
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
 
+    /**
+     * Obtiene un usuario activo por su identificador.
+     *
+     * @param id Identificador del usuario.
+     * @return DTO con la información del usuario.
+     * @throws UsuarioNotFoundException Si no se encuentra el usuario.
+     */
+    @Override
     public UsuarioResponseDTO getUsuarioById(Long id) {
-        log.info("Buscando usuario con ID: {}", id);
+        LOGGER.infov("Buscando usuario con ID: {0}", id);
         Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
-            log.warn("Usuario no encontrado con ID: {}", id);
+            LOGGER.warnv("Usuario no encontrado con ID: {0}", id);
             throw new UsuarioNotFoundException(id);
         }
-        log.info("Usuario encontrado: {}", usuario);
+        LOGGER.infov("Usuario encontrado: {0}", usuario);
         return usuarioMapper.toResponseDTO(usuario);
     }
 
+    /**
+     * Obtiene la lista de usuarios activos paginada.
+     *
+     * @param page Número de página.
+     * @param size Tamaño de la página.
+     * @return DTO con la información de paginación y lista de usuarios.
+     * @throws NoUsuariosRegistradosException Si no hay usuarios registrados.
+     */
+    @Override
     public PaginacionResponseDTO getAllUsuariosPaginados(int page, int size) {
-        log.info("Obteniendo usuarios paginados - Página: {}, Tamaño: {}", page, size);
+        LOGGER.infov("Obteniendo usuarios paginados - Página: {0}, Tamaño: {1}", page, size);
 
-        // Obtener usuarios paginados
         List<Usuario> usuarios = usuarioRepository.findActiveUsersPaged(page, size);
-
-        // Obtener conteo total de usuarios
         long totalUsuarios = usuarioRepository.count();
         int totalPaginas = (int) Math.ceil((double) totalUsuarios / size);
 
-        if (usuarios.isEmpty()) {
-            log.warn("No hay usuarios registrados en el sistema");
+        if (totalUsuarios == 0) { // Mejor condición para validar realmente sin usuarios
+            LOGGER.warn("No hay usuarios registrados en el sistema");
             throw new NoUsuariosRegistradosException("No hay usuarios registrados en el sistema");
         }
 
-        // Mapear a DTO
         List<UsuarioResponseDTO> usuariosDTO = usuarios.stream()
                 .map(usuarioMapper::toResponseDTO)
                 .collect(Collectors.toList());
 
-        // Construir respuesta de paginación
         PaginacionResponseDTO response = new PaginacionResponseDTO(usuariosDTO, page, totalPaginas, totalUsuarios, size);
-        log.info("Paginación exitosa - Total usuarios: {}, Páginas: {}", totalUsuarios, totalPaginas);
+        LOGGER.infov("Paginación exitosa - Total usuarios: {0}, Páginas: {1}", totalUsuarios, totalPaginas);
         return response;
     }
 
-    @Transactional //CAMBIAR LA VALIDACION DEL CORREO Y CEDULA, TOMA LOS USUARIOS ELIMINADOS TAMBIEN
+    /**
+     * Crea un nuevo usuario validando que el correo y la cédula no existan previamente.
+     *
+     * @param usuarioDTO Datos del usuario a crear.
+     * @return DTO con la información del usuario creado.
+     * @throws UsuarioYaExisteException Si ya existe un usuario con el correo o la cédula especificada.
+     */
+    @Transactional
+    @Override
     public UsuarioResponseDTO createUsuario(UsuarioDTO usuarioDTO) {
-        log.info("Creando usuario con email: {} y cédula: {}", usuarioDTO.email(), usuarioDTO.cedula());
+        LOGGER.infov("Creando usuario con email: {0} y cédula: {1}", usuarioDTO.email(), usuarioDTO.cedula());
 
-        // Validar que el email no exista
-        if (usuarioRepository.find("email", usuarioDTO.email()).firstResult() != null) {
-            log.warn("Ya existe un usuario registrado con el correo: {}", usuarioDTO.email());
-            throw new UsuarioYaExisteException("Ya existe un usuario registrado con el correo " + usuarioDTO.email());
+        if (usuarioRepository.findByEmail(usuarioDTO.email()).isPresent()) {
+            LOGGER.warnv("Ya existe un usuario con el correo: {0}", usuarioDTO.email());
+            throw new UsuarioYaExisteException("Correo " + usuarioDTO.email() + " ya registrado");
         }
 
-        // Validar que la cédula no exista
-        if (usuarioRepository.find("cedula", usuarioDTO.cedula()).firstResult() != null) {
-            log.warn("Ya existe un usuario registrado con la cédula: {}", usuarioDTO.cedula());
-            throw new UsuarioYaExisteException("Ya existe un usuario registrado con la cédula " + usuarioDTO.cedula());
+        if (usuarioRepository.findByCedula(usuarioDTO.cedula()).isPresent()) {
+            LOGGER.warnv("Ya existe un usuario con la cédula: {0}", usuarioDTO.cedula());
+            throw new UsuarioYaExisteException("Cédula " + usuarioDTO.cedula() + " ya registrada");
         }
 
-        // Convertir de DTO a entidad usando el mapper
         Usuario nuevoUsuario = usuarioMapper.toEntity(usuarioDTO);
-
-        // Guardar el usuario en la base de datos
         usuarioRepository.persist(nuevoUsuario);
-        log.info("Usuario creado exitosamente con ID: {}", nuevoUsuario.getId());
-
-        // Mapear a DTO de respuesta
+        LOGGER.infov("Usuario creado exitosamente con ID: {0}", nuevoUsuario.getId());
+        AUDIT_LOGGER.infov("AUDIT: Creación | ID: {0} | Email: {1}", nuevoUsuario.getId(), usuarioDTO.email());
         return usuarioMapper.toResponseDTO(nuevoUsuario);
     }
 
+    /**
+     * Actualiza un usuario activo existente.
+     *
+     * @param id         Identificador del usuario a actualizar.
+     * @param usuarioDTO Datos nuevos para el usuario.
+     * @return DTO con la información actualizada del usuario.
+     * @throws UsuarioNotFoundException Si no se encuentra el usuario.
+     * @throws UsuarioYaExisteException Si el nuevo correo ya está registrado en otro usuario.
+     */
     @Transactional
+    @Override
     public UsuarioResponseDTO updateUsuario(Long id, UsuarioDTO usuarioDTO) {
-        log.info("Actualizando usuario con ID: {}", id);
+        LOGGER.infov("Actualizando usuario con ID: {0}", id);
 
-        // Buscar el usuario por ID
         Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
-            log.warn("Usuario no encontrado con ID: {}", id);
+            LOGGER.warnv("Usuario no encontrado con ID: {0}", id);
             throw new UsuarioNotFoundException(id);
         }
 
-        // Validar que el nuevo email no esté en uso por otro usuario
         if (!usuario.getEmail().equals(usuarioDTO.email()) &&
-                usuarioRepository.find("email", usuarioDTO.email()).firstResult() != null) {
-            log.warn("Ya existe un usuario con el correo: {}", usuarioDTO.email());
-            throw new UsuarioYaExisteException("Ya existe un usuario con el correo " + usuarioDTO.email());
+                usuarioRepository.findByEmail(usuarioDTO.email()).isPresent()) {
+            LOGGER.warnv("Correo ya registrado: {0}", usuarioDTO.email());
+            throw new UsuarioYaExisteException("Correo " + usuarioDTO.email() + " ya existe");
         }
 
-        // Actualizar los datos del usuario usando el mapper
         usuarioMapper.updateEntityFromDTO(usuarioDTO, usuario);
-
-        // Guardar los cambios
         usuarioRepository.persist(usuario);
-        log.info("Usuario actualizado exitosamente con ID: {}", usuario.getId());
-
-        // Mapear a DTO de respuesta
+        LOGGER.infov("Usuario actualizado exitosamente con ID: {0}", usuario.getId());
+        AUDIT_LOGGER.infov("AUDIT: Actualización | ID: {0} | Email: {1}", usuario.getId(), usuarioDTO.email());
         return usuarioMapper.toResponseDTO(usuario);
     }
 
+    /**
+     * Realiza una actualización parcial de un usuario activo.
+     *
+     * @param id  Identificador del usuario.
+     * @param dto Datos parciales a actualizar.
+     * @return DTO con la información actualizada del usuario.
+     * @throws UsuarioNotFoundException Si no se encuentra el usuario.
+     * @throws UsuarioYaExisteException Si se intenta actualizar con un correo o cédula ya registrados.
+     */
     @Transactional
+    @Override
     public UsuarioResponseDTO partialUpdateUsuario(Long id, UsuarioDTO dto) {
+        LOGGER.infov("Inicio actualización parcial para usuario con ID: {0}", id);
         Usuario usuario = usuarioRepository.findActiveById(id);
-        if (usuario == null) throw new UsuarioNotFoundException(id);
+        if (usuario == null) {
+            LOGGER.warnv("Usuario no encontrado con ID: {0}", id);
+            throw new UsuarioNotFoundException(id);
+        }
 
         boolean needsUpdate = false;
 
-        if (dto.nombre() != null) {
+        if (dto.nombre() != null && !dto.nombre().equals(usuario.getNombre())) {
             usuario.setNombre(dto.nombre());
             needsUpdate = true;
+            LOGGER.debugv("Actualizando nombre a: {0}", dto.nombre());
         }
 
         if (dto.cedula() != null && !usuario.getCedula().equals(dto.cedula())) {
-            if (usuarioRepository.findByCedula(dto.cedula()).isPresent()) {
-                throw new UsuarioYaExisteException("La cedula " + dto.cedula() + " ya está registrada");
-            }
+            usuarioRepository.findByCedula(dto.cedula()).ifPresent(existing -> {
+                LOGGER.warnv("Cédula duplicada: {0}", dto.cedula());
+                throw new UsuarioYaExisteException("Cédula " + dto.cedula() + " ya registrada");
+            });
             usuario.setCedula(dto.cedula());
             needsUpdate = true;
         }
 
         if (dto.email() != null && !usuario.getEmail().equals(dto.email())) {
-            if (usuarioRepository.findByEmail(dto.email()).isPresent()) {
-                throw new UsuarioYaExisteException("El correo " + dto.email() + " ya está registrado");
-            }
+            usuarioRepository.findByEmail(dto.email()).ifPresent(existing -> {
+                LOGGER.warnv("Correo duplicado: {0}", dto.email());
+                throw new UsuarioYaExisteException("Correo " + dto.email() + " ya registrado");
+            });
             usuario.setEmail(dto.email());
             needsUpdate = true;
         }
 
         if (dto.ocupacion() != null) {
-            usuario.setOcupacion(OcupacionUsuario.valueOf(dto.ocupacion()));
-            needsUpdate = true;
+            try {
+                usuario.setOcupacion(OcupacionUsuario.valueOf(dto.ocupacion()));
+                needsUpdate = true;
+                LOGGER.debugv("Actualizando ocupación a: {0}", dto.ocupacion());
+            } catch (IllegalArgumentException e) {
+                LOGGER.warnv("Ocupación inválida: {0}", dto.ocupacion());
+            }
         }
 
-        if (dto.clase() != null) {
+        if (dto.clase() != null && !dto.clase().equals(usuario.getClase())) {
             usuario.setClase(dto.clase());
             needsUpdate = true;
+            LOGGER.debugv("Actualizando clase a: {0}", dto.clase());
         }
 
         if (needsUpdate) {
             usuario.setFechaActualizacion(LocalDateTime.now());
             usuarioRepository.persist(usuario);
-            log.info("Usuario ID: {} actualizado parcialmente", id);
+            LOGGER.infov("Usuario ID: {0} actualizado parcialmente", id);
+            AUDIT_LOGGER.infov("AUDIT: Actualización parcial | ID: {0} | Email: {1}", id, dto.email());
+        } else {
+            LOGGER.infov("Sin cambios detectados para usuario ID: {0}", id);
         }
-
         return usuarioMapper.toResponseDTO(usuario);
     }
 
+    /**
+     * Marca a un usuario activo como eliminado cambiando su estado.
+     *
+     * @param id Identificador del usuario a eliminar.
+     * @throws UsuarioNotFoundException Si no se encuentra el usuario.
+     */
     @Transactional
+    @Override
     public void deleteUsuario(Long id) {
-        log.info("Eliminando usuario con ID: {}", id);
+        LOGGER.infov("Eliminando usuario con ID: {0}", id);
 
-        // Buscar el usuario por ID
         Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
-            log.warn("Usuario no encontrado con ID: {}", id);
+            LOGGER.warnv("Usuario no encontrado con ID: {0}", id);
             throw new UsuarioNotFoundException(id);
         }
         usuario.setEstadoCuenta(EstadoCuenta.ELIMINADA);
-        // Eliminar el usuario
         usuarioRepository.persist(usuario);
-        log.info("Usuario eliminado exitosamente con ID: {}", id);
+        LOGGER.infov("Usuario ID: {0} eliminado exitosamente", id);
+        AUDIT_LOGGER.infov("AUDIT: Eliminación | ID: {0}", id);
     }
-
 }

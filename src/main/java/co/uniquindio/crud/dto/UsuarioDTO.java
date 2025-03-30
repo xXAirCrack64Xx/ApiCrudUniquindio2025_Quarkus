@@ -28,6 +28,8 @@ public record UsuarioDTO (
         String clase,
 
         @NotBlank(message = "La clave es obligatoria")
+        @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).*$",
+                message = "La clave debe contener al menos un dígito, una mayúscula y una minúscula")
         @Size(min = 8, max = 20)
         String clave
 ) {
