@@ -206,11 +206,6 @@ public class UsuarioServiceImplements implements UsuarioService {
             }
         }
 
-        if (dto.clase() != null && !dto.clase().equals(usuario.getClase())) {
-            usuario.setClase(dto.clase());
-            needsUpdate = true;
-            LOGGER.debugv("Actualizando clase a: {0}", dto.clase());
-        }
 
         if (needsUpdate) {
             usuario.setFechaActualizacion(LocalDateTime.now());

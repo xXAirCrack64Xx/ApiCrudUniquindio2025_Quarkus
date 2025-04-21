@@ -24,9 +24,6 @@ public record UsuarioDTO (
         @Pattern(regexp = "ESTUDIANTE|PROFESOR", message = "La ocupación debe ser ESTUDIANTE o PROFESOR")
         String ocupacion,
 
-        @Size(max = 50, message = "la clase maximo puede contener 50 caracteres")
-        String clase,
-
         @NotBlank(message = "La clave es obligatoria")
         @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).*$",
                 message = "La clave debe contener al menos un dígito, una mayúscula y una minúscula")

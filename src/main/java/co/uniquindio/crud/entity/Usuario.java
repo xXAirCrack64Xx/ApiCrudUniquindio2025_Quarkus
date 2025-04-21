@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @EqualsAndHashCode(callSuper = true)
@@ -47,8 +48,8 @@ public class Usuario extends PanacheEntityBase {
     @Enumerated(EnumType.STRING)
     private EstadoCuenta estadoCuenta;
 
-    @Size(max = 50)
-    private String clase;
+    @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
+    private List<Programa> programasCreados;
 
     @NotBlank
     private String clave;
@@ -56,6 +57,15 @@ public class Usuario extends PanacheEntityBase {
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaActualizacion;
+
+    @OneToMany(mappedBy = "profesor")
+    private List<Clase> clasesComoProfesor;
+
+    @ManyToMany(mappedBy = "estudiantes")
+    private List<Clase> clasesComoEstudiante;
+
+
+
 
 }
 

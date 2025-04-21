@@ -28,7 +28,6 @@ public interface UsuarioMapper {
     @Mapping(target = "rol", expression = "java(RolUsuario.GUEST)")
     // Establece el estado de cuenta por defecto
     @Mapping(target = "estadoCuenta", expression = "java(EstadoCuenta.REGISTRADA)")
-    @Mapping(target = "clase", source = "clase")
     // Codifica la contraseña usando BCrypt
     @Mapping(target = "clave", expression = "java(BCrypt.hashpw(usuarioDTO.clave(), BCrypt.gensalt()))")
     @Mapping(target = "fechaCreacion", expression = "java(LocalDateTime.now())")
