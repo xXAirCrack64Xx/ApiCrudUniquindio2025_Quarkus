@@ -35,6 +35,7 @@ public interface UsuarioMapper {
     Usuario toEntity(UsuarioDTO usuarioDTO);
 
     @Mapping(target = "fechaActualizacion", expression = "java(LocalDateTime.now())")
-    void updateEntityFromDTO(UsuarioDTO usuarioDTO, @MappingTarget Usuario usuario);
+    @Mapping(target = "id", ignore = true)
+    void updateEntityFromDTO(UsuarioDTO dto, @MappingTarget Usuario entity);
 }
 
