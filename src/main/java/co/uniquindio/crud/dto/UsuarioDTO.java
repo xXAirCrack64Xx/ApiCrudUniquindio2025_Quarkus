@@ -4,8 +4,6 @@ import jakarta.validation.constraints.*;
 
 public record UsuarioDTO (
 
-        Long id,
-
         @NotBlank(message = "El nombre es obligatorio")
         @Size(min = 3, max = 50, message = "el nombre debe tener entre 3 y 50 caracteres")
         String nombre,

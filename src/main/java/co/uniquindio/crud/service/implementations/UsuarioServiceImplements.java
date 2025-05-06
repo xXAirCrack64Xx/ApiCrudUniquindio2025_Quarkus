@@ -1,6 +1,7 @@
 package co.uniquindio.crud.service.implementations;
 
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
+import co.uniquindio.crud.dto.ParcialUserUpdate;
 import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
 import co.uniquindio.crud.entity.EstadoCuenta;
@@ -162,7 +163,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      */
     @Transactional
     @Override
-    public UsuarioResponseDTO partialUpdateUsuario(Long id, UsuarioDTO dto) {
+    public UsuarioResponseDTO partialUpdateUsuario(Long id, ParcialUserUpdate dto) {
         LOGGER.infov("Inicio actualización parcial para usuario con ID: {0}", id);
         Usuario usuario = usuarioRepository.findActiveById(id);
         if (usuario == null) {
@@ -195,17 +196,6 @@ public class UsuarioServiceImplements implements UsuarioService {
             usuario.setEmail(dto.email());
             needsUpdate = true;
         }
-
-        if (dto.ocupacion() != null) {
-            try {
-                usuario.setOcupacion(OcupacionUsuario.valueOf(dto.ocupacion()));
-                needsUpdate = true;
-                LOGGER.debugv("Actualizando ocupación a: {0}", dto.ocupacion());
-            } catch (IllegalArgumentException e) {
-                LOGGER.warnv("Ocupación inválida: {0}", dto.ocupacion());
-            }
-        }
-
 
         if (needsUpdate) {
             usuario.setFechaActualizacion(LocalDateTime.now());

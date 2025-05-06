@@ -1,6 +1,7 @@
 package co.uniquindio.crud.resource;
 
 import co.uniquindio.crud.dto.PaginacionResponseDTO;
+import co.uniquindio.crud.dto.ParcialUserUpdate;
 import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
 import co.uniquindio.crud.exception.ParametrosInvalidosException;
@@ -173,7 +174,7 @@ public class UsuarioResource {
     @Path("/{userId}")
     public Response partialUpdateUsuario(
             @PathParam("userId") String userIdStr,
-            @Valid UsuarioDTO usuarioDTO
+            @Valid ParcialUserUpdate usuarioDTO
     ) {
         LOGGER.infov("Inicio actualización parcial para usuario con userId: {0}", userIdStr);
         try {
@@ -187,10 +188,6 @@ public class UsuarioResource {
         catch (NumberFormatException e) {
             LOGGER.errorv("userId inválido: {0}", userIdStr);
             throw new ParametrosInvalidosException("El userId debe ser un número válido");
-        }
-        catch (Exception e) {
-            LOGGER.errorv("Error en actualización parcial para userId: {0}. Detalle: {1}", userIdStr, e.getMessage());
-            throw e;
         }
     }
 
