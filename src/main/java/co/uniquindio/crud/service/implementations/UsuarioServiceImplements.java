@@ -5,7 +5,6 @@ import co.uniquindio.crud.dto.ParcialUserUpdate;
 import co.uniquindio.crud.dto.UsuarioDTO;
 import co.uniquindio.crud.dto.UsuarioResponseDTO;
 import co.uniquindio.crud.entity.EstadoCuenta;
-import co.uniquindio.crud.entity.OcupacionUsuario;
 import co.uniquindio.crud.entity.Usuario;
 import co.uniquindio.crud.exception.NoUsuariosRegistradosException;
 import co.uniquindio.crud.exception.UsuarioNotFoundException;
@@ -228,5 +227,10 @@ public class UsuarioServiceImplements implements UsuarioService {
         usuarioRepository.persist(usuario);
         LOGGER.infov("Usuario ID: {0} eliminado exitosamente", id);
         AUDIT_LOGGER.infov("AUDIT: Eliminación | ID: {0}", id);
+    }
+
+    public UsuarioResponseDTO findbyemail (String email){
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsuarioNotFoundException(email));
+        return usuarioMapper.toResponseDTO(usuario);
     }
 }

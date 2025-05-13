@@ -12,7 +12,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger; // Cambio clave aquí
-
 import java.net.URI;
 
 /**
@@ -65,6 +64,22 @@ public class UsuarioResource {
             LOGGER.errorv("Error al consultar el usuario con userId: {0}", userId, e);
             throw e;
         }
+    }
+
+    /**
+     * Obtiene la información de un usuario por su email.
+     *
+     * @param email Identificador del usuario en formato String.
+     * @return Respuesta HTTP con el usuario encontrado.
+     */
+
+    @GET
+    @Path("/email/{email}")
+    public Response getUsuarioByEmail(@PathParam("email") String email) {
+        LOGGER.infov("Inicio consulta de usuario con email: {0}", email);
+            UsuarioResponseDTO responseDTO = usuarioService.findbyemail(email);
+            LOGGER.infov("Consulta exitosa para el usuario con email: {0}", email);
+            return Response.ok(responseDTO).build();
     }
 
     /**
@@ -243,4 +258,7 @@ public class UsuarioResource {
             );
         }
     }
+
+
+
 }
