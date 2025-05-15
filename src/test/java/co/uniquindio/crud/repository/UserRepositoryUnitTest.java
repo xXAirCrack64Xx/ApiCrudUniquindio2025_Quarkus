@@ -78,7 +78,7 @@ class UsuarioRepositoryTest {
         Optional<Usuario> eliminado = usuarioRepository.findByCedula("987654321");
         assertFalse(eliminado.isPresent());
     }
-
+// hola
     @Test
     void testFindActiveUsersPaged() {
         List<Usuario> resultados = usuarioRepository.findActiveUsersPaged(1, 10);
