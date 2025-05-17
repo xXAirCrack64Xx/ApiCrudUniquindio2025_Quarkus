@@ -1,18 +1,17 @@
 package co.uniquindio.crud.service.interfaces;
 
-import co.uniquindio.crud.dto.PaginacionResponseDTO;
-import co.uniquindio.crud.dto.ParcialUserUpdate;
-import co.uniquindio.crud.dto.UsuarioDTO;
-import co.uniquindio.crud.dto.UsuarioResponseDTO;
+import co.uniquindio.crud.dto.user.PaginacionUserResponseDTO;
+import co.uniquindio.crud.dto.user.ParcialUserUpdate;
+import co.uniquindio.crud.dto.user.UsuarioDTO;
+import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
 
 public interface UsuarioService {
 
-    public UsuarioResponseDTO getUsuarioById(Long id);
-    public PaginacionResponseDTO getAllUsuariosPaginados(int page, int size);
-    public UsuarioResponseDTO createUsuario(UsuarioDTO usuarioDTO);
-    public UsuarioResponseDTO updateUsuario(Long id, UsuarioDTO usuarioDTO);
-    public UsuarioResponseDTO partialUpdateUsuario(Long id, ParcialUserUpdate dto) ;
-    public void deleteUsuario(Long id);
-
+    UsuarioResponseDTO getUsuarioById(Long id);
+    PaginacionUserResponseDTO getAllUsuariosPaginados(int page, int size);
+    UsuarioResponseDTO createUsuario(UsuarioDTO usuarioDTO);
+    UsuarioResponseDTO updateUsuario(Long id, UsuarioDTO usuarioDTO);
+    UsuarioResponseDTO partialUpdateUsuario(Long id, ParcialUserUpdate dto) ;
+    void deleteUsuario(Long id);
 
 }

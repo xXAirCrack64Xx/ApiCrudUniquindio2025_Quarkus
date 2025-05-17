@@ -1,11 +1,11 @@
 package co.uniquindio.crud.service.mappers;
 
-import co.uniquindio.crud.dto.UsuarioDTO;
-import co.uniquindio.crud.dto.UsuarioResponseDTO;
-import co.uniquindio.crud.entity.EstadoCuenta;
-import co.uniquindio.crud.entity.OcupacionUsuario;
-import co.uniquindio.crud.entity.RolUsuario;
-import co.uniquindio.crud.entity.Usuario;
+import co.uniquindio.crud.dto.user.UsuarioDTO;
+import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
+import co.uniquindio.crud.entity.user.EstadoCuenta;
+import co.uniquindio.crud.entity.user.OcupacionUsuario;
+import co.uniquindio.crud.entity.user.RolUsuario;
+import co.uniquindio.crud.entity.user.Usuario;
 import org.mapstruct.*;
 import java.time.LocalDateTime;
 import org.mindrot.jbcrypt.BCrypt;

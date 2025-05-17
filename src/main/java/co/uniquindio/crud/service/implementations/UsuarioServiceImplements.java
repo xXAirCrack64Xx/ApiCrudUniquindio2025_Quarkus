@@ -1,15 +1,14 @@
 package co.uniquindio.crud.service.implementations;
 
-import co.uniquindio.crud.dto.PaginacionResponseDTO;
-import co.uniquindio.crud.dto.ParcialUserUpdate;
-import co.uniquindio.crud.dto.UsuarioDTO;
-import co.uniquindio.crud.dto.UsuarioResponseDTO;
-import co.uniquindio.crud.entity.EstadoCuenta;
-import co.uniquindio.crud.entity.OcupacionUsuario;
-import co.uniquindio.crud.entity.Usuario;
-import co.uniquindio.crud.exception.NoUsuariosRegistradosException;
-import co.uniquindio.crud.exception.UsuarioNotFoundException;
-import co.uniquindio.crud.exception.UsuarioYaExisteException;
+import co.uniquindio.crud.dto.user.PaginacionUserResponseDTO;
+import co.uniquindio.crud.dto.user.ParcialUserUpdate;
+import co.uniquindio.crud.dto.user.UsuarioDTO;
+import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
+import co.uniquindio.crud.entity.user.EstadoCuenta;
+import co.uniquindio.crud.entity.user.Usuario;
+import co.uniquindio.crud.exception.user.NoUsuariosRegistradosException;
+import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
+import co.uniquindio.crud.exception.user.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
@@ -69,7 +68,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      * @throws NoUsuariosRegistradosException Si no hay usuarios registrados.
      */
     @Override
-    public PaginacionResponseDTO getAllUsuariosPaginados(int page, int size) {
+    public PaginacionUserResponseDTO getAllUsuariosPaginados(int page, int size) {
         LOGGER.infov("Obteniendo usuarios paginados - Página: {0}, Tamaño: {1}", page, size);
 
         List<Usuario> usuarios = usuarioRepository.findActiveUsersPaged(page, size);
@@ -85,7 +84,7 @@ public class UsuarioServiceImplements implements UsuarioService {
                 .map(usuarioMapper::toResponseDTO)
                 .collect(Collectors.toList());
 
-        PaginacionResponseDTO response = new PaginacionResponseDTO(usuariosDTO, page, totalPaginas, totalUsuarios, size);
+        PaginacionUserResponseDTO response = new PaginacionUserResponseDTO(usuariosDTO, page, totalPaginas, totalUsuarios, size);
         LOGGER.infov("Paginación exitosa - Total usuarios: {0}, Páginas: {1}", totalUsuarios, totalPaginas);
         return response;
     }

@@ -1,7 +1,7 @@
 package co.uniquindio.crud.exceptionhandler;
 
-import co.uniquindio.crud.dto.ErrorValidacion;
-import co.uniquindio.crud.dto.ErrorValidacionResponse;
+import co.uniquindio.crud.dto.auth.ErrorValidacion;
+import co.uniquindio.crud.dto.auth.ErrorValidacionResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;

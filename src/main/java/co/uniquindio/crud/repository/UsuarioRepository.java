@@ -1,7 +1,7 @@
 package co.uniquindio.crud.repository;
 
-import co.uniquindio.crud.entity.EstadoCuenta;
-import co.uniquindio.crud.entity.Usuario;
+import co.uniquindio.crud.entity.user.EstadoCuenta;
+import co.uniquindio.crud.entity.user.Usuario;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;

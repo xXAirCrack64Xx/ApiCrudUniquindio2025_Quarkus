@@ -1,7 +1,7 @@
 package co.uniquindio.crud.service.auth;
 
-import co.uniquindio.crud.entity.Usuario;
-import co.uniquindio.crud.exception.UsuarioNotFoundException;
+import co.uniquindio.crud.entity.user.Usuario;
+import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;

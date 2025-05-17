@@ -1,6 +1,6 @@
 package co.uniquindio.crud.exceptionhandler;
 
-import co.uniquindio.crud.dto.ErrorResponse;
+import co.uniquindio.crud.dto.auth.ErrorResponse;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;

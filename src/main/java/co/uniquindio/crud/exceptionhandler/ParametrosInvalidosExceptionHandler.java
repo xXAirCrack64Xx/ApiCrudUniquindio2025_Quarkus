@@ -1,7 +1,7 @@
 package co.uniquindio.crud.exceptionhandler;
 
-import co.uniquindio.crud.dto.ErrorResponse;
-import co.uniquindio.crud.exception.ParametrosInvalidosException;
+import co.uniquindio.crud.dto.auth.ErrorResponse;
+import co.uniquindio.crud.exception.user.ParametrosInvalidosException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;

@@ -1,11 +1,11 @@
 package co.uniquindio.crud.resource;
 
-import co.uniquindio.crud.dto.PaginacionResponseDTO;
-import co.uniquindio.crud.dto.ParcialUserUpdate;
-import co.uniquindio.crud.dto.UsuarioDTO;
-import co.uniquindio.crud.dto.UsuarioResponseDTO;
-import co.uniquindio.crud.exception.ParametrosInvalidosException;
-import co.uniquindio.crud.service.implementations.UsuarioServiceImplements;
+import co.uniquindio.crud.dto.user.PaginacionUserResponseDTO;
+import co.uniquindio.crud.dto.user.ParcialUserUpdate;
+import co.uniquindio.crud.dto.user.UsuarioDTO;
+import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
+import co.uniquindio.crud.exception.user.ParametrosInvalidosException;
+import co.uniquindio.crud.service.interfaces.UsuarioService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -33,7 +33,7 @@ public class UsuarioResource {
     private static final Logger LOGGER = Logger.getLogger(UsuarioResource.class);
     private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
 
-    private final UsuarioServiceImplements usuarioService;
+    private final UsuarioService usuarioService;
 
     /**
      * Obtiene la información de un usuario por su identificador.
@@ -90,7 +90,7 @@ public class UsuarioResource {
                 throw new ParametrosInvalidosException("Los parámetros de paginación deben ser mayores que 0");
             }
 
-            PaginacionResponseDTO response = usuarioService.getAllUsuariosPaginados(page, size);
+            PaginacionUserResponseDTO response = usuarioService.getAllUsuariosPaginados(page, size);
             LOGGER.infov("Consulta paginada completada para página {0} con tamaño {1}", page, size);
             return Response.ok(response).build();
         }
