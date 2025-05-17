@@ -22,7 +22,7 @@ import java.util.List;
  * Recurso JAX-RS para CRUD de Programa.
  * Solo recibe peticiones, delega la lógica al servicio y retorna DTOs.
  */
-@Path("/programas")
+@Path("api/v1/programas")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
@@ -112,6 +112,7 @@ public class ProgramaResource {
         AUDIT_LOGGER.infof("Programa eliminado con ID=%d", id);
         return Response.noContent().build();
     }
+
 }
 
 

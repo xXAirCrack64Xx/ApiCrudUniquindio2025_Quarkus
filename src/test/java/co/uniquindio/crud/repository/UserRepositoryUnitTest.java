@@ -1,12 +1,9 @@
 package co.uniquindio.crud.repository;
 
-import co.uniquindio.crud.entity.EstadoCuenta;
-import co.uniquindio.crud.entity.Usuario;
+import co.uniquindio.crud.entity.user.EstadoCuenta;
+import co.uniquindio.crud.entity.user.Usuario;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 

@@ -26,10 +26,10 @@ public interface ProgramaMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "estadoPrograma", expression = "java(EstadoPrograma.CREATED)")
-    @Mapping(target = "autor", ignore = true)
+    @Mapping(target = "autor", source = "autor")
     @Mapping(target = "compartidoConUsuarios", expression = "java(new HashSet<>())")
     @Mapping(target = "compartidoConClases", expression = "java(new HashSet<>())")
-    Programa toEntity(ProgramaRequestDTO dto);
+    Programa toEntity(ProgramaRequestDTO dto, Usuario autor);
 
     /**
      * Convierte la entidad Programa a DTO de respuesta.

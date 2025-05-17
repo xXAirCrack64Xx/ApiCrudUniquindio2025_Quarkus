@@ -3,13 +3,16 @@ package co.uniquindio.crud.service.implementations;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
+import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
 import co.uniquindio.crud.entity.program.Programa;
 import co.uniquindio.crud.entity.user.Usuario;
 import co.uniquindio.crud.exception.program.ProgramaAlreadyExistsException;
 import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
 import co.uniquindio.crud.repository.ProgramaRepository;
+import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.resource.UsuarioResource;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
+import co.uniquindio.crud.service.interfaces.UsuarioService;
 import co.uniquindio.crud.service.mappers.ProgramaMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,6 +33,7 @@ public class ProgramaServiceImpl implements ProgramaService {
 
     private final ProgramaRepository programaRepository;
     private final ProgramaMapper programaMapper;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     @Transactional
@@ -41,7 +45,9 @@ public class ProgramaServiceImpl implements ProgramaService {
             LOGGER.warnf("Ya existe un programa con titulo='%s'", request.titulo());
             throw new ProgramaAlreadyExistsException(request.titulo());
         }
-        Programa entity = programaMapper.toEntity(request);
+
+        Usuario autor = usuarioRepository.findActiveById(request.autorId());
+        Programa entity = programaMapper.toEntity(request, autor);
         programaRepository.persist(entity);
         AUDIT_LOGGER.infof("Programa creado con ID=%d", entity.getId());
         return programaMapper.toResponse(entity);

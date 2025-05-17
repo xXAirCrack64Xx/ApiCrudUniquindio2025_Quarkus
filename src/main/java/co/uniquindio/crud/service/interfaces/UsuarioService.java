@@ -14,4 +14,5 @@ public interface UsuarioService {
     UsuarioResponseDTO partialUpdateUsuario(Long id, ParcialUserUpdate dto) ;
     void deleteUsuario(Long id);
 
+    UsuarioResponseDTO findbyemail(String email);
 }

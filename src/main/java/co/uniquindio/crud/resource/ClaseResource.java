@@ -20,7 +20,7 @@ import java.util.List;
  * Recurso JAX-RS para operaciones CRUD sobre la entidad Clase.
  * Solo recibe la petición, delega la lógica de negocio al servicio y retorna DTOs.
  */
-@Path("/clases")
+@Path("api/v1/clases")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
@@ -29,8 +29,7 @@ public class ClaseResource {
     private static final Logger LOGGER = Logger.getLogger(ClaseResource.class);
     private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
 
-    @Inject
-    ClaseService claseService;
+    private final ClaseService claseService;
 
     @Context
     UriInfo uriInfo;

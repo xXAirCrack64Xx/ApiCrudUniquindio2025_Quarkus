@@ -230,6 +230,7 @@ public class UsuarioServiceImplements implements UsuarioService {
     }
     // hola
 
+    @Override
     public UsuarioResponseDTO findbyemail (String email){
         Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsuarioNotFoundException(email));
         return usuarioMapper.toResponseDTO(usuario);
