@@ -1,0 +1,2 @@
+2025-05-13 14:15:45,735 macbook-air-de-alejo /Users/aircrack64/Library/Java/JavaVirtualMachines/openjdk-22.0.2/Contents/Home/bin/java[12818] INFO  [org.tes.DockerClientFactory] (build-5) Testcontainers version: 1.20.4
+2025-05-13 14:15:45,890 macbook-air-de-alejo /Users/aircrack64/Library/Java/JavaVirtualMachines/openjdk-22.0.2/Contents/Home/bin/java[12818] INFO  [org.tes.doc.DockerClientProviderStrategy] (build-5) Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first

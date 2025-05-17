@@ -228,4 +228,10 @@ public class UsuarioServiceImplements implements UsuarioService {
         LOGGER.infov("Usuario ID: {0} eliminado exitosamente", id);
         AUDIT_LOGGER.infov("AUDIT: Eliminación | ID: {0}", id);
     }
+    // hola
+
+    public UsuarioResponseDTO findbyemail (String email){
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsuarioNotFoundException(email));
+        return usuarioMapper.toResponseDTO(usuario);
+    }
 }
