@@ -18,9 +18,6 @@ public record UsuarioDTO (
         @Email(message = "El email no es válido")
         String email,
 
-        @NotBlank(message = "La ocupación es obligatoria")
-        @Pattern(regexp = "ESTUDIANTE|PROFESOR", message = "La ocupación debe ser ESTUDIANTE o PROFESOR")
-        String ocupacion,
 
         @NotBlank(message = "La clave es obligatoria")
         @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).*$",

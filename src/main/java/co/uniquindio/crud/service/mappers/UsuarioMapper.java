@@ -23,7 +23,7 @@ public interface UsuarioMapper {
     @Mapping(target = "cedula", source = "cedula")
     @Mapping(target = "email", source = "email")
     // Convierte la cadena del DTO en la enumeración correspondiente
-    @Mapping(target = "ocupacion", expression = "java(OcupacionUsuario.valueOf(usuarioDTO.ocupacion()))")
+    @Mapping(target = "ocupacion", expression = "java(OcupacionUsuario.ESTUDIANTE)")
     // Establece un rol por defecto
     @Mapping(target = "rol", expression = "java(RolUsuario.GUEST)")
     // Establece el estado de cuenta por defecto
