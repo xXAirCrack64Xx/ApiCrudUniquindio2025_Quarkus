@@ -11,6 +11,9 @@ public record ProgramaResponseDTO(
         String tema,
         Long autorId,
         Set<Long> usuarioIds,
-        Set<Long> claseIds
+        Set<Long> claseIds,
+
+        Long nota
+
 ) {}
 

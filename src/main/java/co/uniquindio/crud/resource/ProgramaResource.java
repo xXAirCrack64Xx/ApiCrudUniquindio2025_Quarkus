@@ -3,9 +3,12 @@ package co.uniquindio.crud.resource;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
+import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -112,6 +115,51 @@ public class ProgramaResource {
         AUDIT_LOGGER.infof("Programa eliminado con ID=%d", id);
         return Response.noContent().build();
     }
+
+    /**
+     * Califica un programa con una nota entre 0 y 5.
+     * @param id ID del programa.
+     * @param nota Nueva nota.
+     * @return mensaje de confirmación.
+     */
+    @PUT
+    @Path("{id}/calificar")
+    public Response calificarPrograma(@PathParam("id") Long id,
+                                      @QueryParam("nota") @Min(0) @Max(5) Long nota) {
+        LOGGER.infof("Solicitud para calificar programa ID=%d con nota=%d", id, nota);
+        String resultado = programaService.calificarPrograma(id, nota);
+        AUDIT_LOGGER.infof("Programa ID=%d calificado con nota=%d", id, nota);
+        return Response.ok(resultado).build();
+    }
+
+    @PUT
+    @Path("{id}/comentar")
+    public Response comentarPrograma(
+            @PathParam("id") Long id,
+            @QueryParam("comentario") String comentario,
+            @QueryParam("idProfesor") Long idProfesor) {
+
+        LOGGER.infof("Comentando programa ID=%d por profesor ID=%d", id, idProfesor);
+
+        if (comentario == null || comentario.isBlank() || idProfesor == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Faltan datos requeridos").build();
+        }
+
+        try {
+            String resultado = programaService.comentarPrograma(id, idProfesor, comentario);
+            AUDIT_LOGGER.infof("Comentario actualizado programa ID=%d", id);
+            return Response.ok(resultado).build();
+        } catch (ProgramaNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Programa no encontrado").build();
+        } catch (Exception e) {
+            LOGGER.error("Error al comentar programa", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+
 
 }
 

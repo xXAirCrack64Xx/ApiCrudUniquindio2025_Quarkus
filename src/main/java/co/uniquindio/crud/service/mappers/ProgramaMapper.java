@@ -39,7 +39,9 @@ public interface ProgramaMapper {
     @Mapping(target = "descripcion", source = "descripcion")
     @Mapping(target = "codigoFuente", source = "codigoFuente")
     @Mapping(target = "dificultad", source = "dificultad")
-    @Mapping(target = "tema", source = "tema")
+    @Mapping(target = "nota", source = "nota")
+
+
     @Mapping(target = "autorId", expression = "java(programa.getAutor()!=null?programa.getAutor().getId():null)")
     @Mapping(target = "usuarioIds", expression = "java(programa.getCompartidoConUsuarios().stream().map(Usuario::getId).collect(Collectors.toSet()))")
     @Mapping(target = "claseIds", expression = "java(programa.getCompartidoConClases().stream().map(Clase::getId).collect(Collectors.toSet()))")
@@ -60,6 +62,7 @@ public interface ProgramaMapper {
     @Mapping(target = "codigoFuente", source = "dto.codigoFuente")
     @Mapping(target = "dificultad", source = "dto.dificultad")
     @Mapping(target = "tema", source = "dto.tema")
+
     void updateEntity(ProgramaRequestDTO dto, @MappingTarget Programa programa);
 }
 

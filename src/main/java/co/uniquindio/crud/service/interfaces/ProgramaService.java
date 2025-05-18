@@ -14,4 +14,8 @@ public interface ProgramaService {
     ProgramaResponseDTO actualizarPrograma(Long id, ProgramaRequestDTO request);
 
     void eliminarPrograma(Long id);
+
+    String calificarPrograma (Long idPrograma, Long notaNueva);
+
+    String comentarPrograma (Long idPrograma, Long idProfesor, String comentario);
 }
