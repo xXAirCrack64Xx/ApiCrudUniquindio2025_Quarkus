@@ -1,5 +1,7 @@
 package co.uniquindio.crud.resource;
 
+import co.uniquindio.crud.dto.comment.ComentarioRequestDTO;
+import co.uniquindio.crud.dto.comment.ComentarioResponseDTO;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
@@ -122,8 +124,8 @@ public class ProgramaResource {
      * @param nota Nueva nota.
      * @return mensaje de confirmación.
      */
-    @PUT
-    @Path("{id}/calificar")
+    @PATCH
+    @Path("{id}/calificaciones")
     public Response calificarPrograma(@PathParam("id") Long id,
                                       @QueryParam("nota") @Min(0) @Max(5) Long nota) {
         LOGGER.infof("Solicitud para calificar programa ID=%d con nota=%d", id, nota);
@@ -132,33 +134,20 @@ public class ProgramaResource {
         return Response.ok(resultado).build();
     }
 
-    @PUT
-    @Path("{id}/comentar")
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("{idPrograma}/comentarios")
     public Response comentarPrograma(
-            @PathParam("id") Long id,
-            @QueryParam("comentario") String comentario,
-            @QueryParam("idProfesor") Long idProfesor) {
+            @PathParam("idPrograma") Long idPrograma,
+            @Valid ComentarioRequestDTO request) {
 
-        LOGGER.infof("Comentando programa ID=%d por profesor ID=%d", id, idProfesor);
+        LOGGER.infof("Comentando programa ID=%d por profesor ID=%d", idPrograma, request.idProfesor());
 
-        if (comentario == null || comentario.isBlank() || idProfesor == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Faltan datos requeridos").build();
-        }
-
-        try {
-            String resultado = programaService.comentarPrograma(id, idProfesor, comentario);
-            AUDIT_LOGGER.infof("Comentario actualizado programa ID=%d", id);
-            return Response.ok(resultado).build();
-        } catch (ProgramaNotFoundException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity("Programa no encontrado").build();
-        } catch (Exception e) {
-            LOGGER.error("Error al comentar programa", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+        ComentarioResponseDTO resultado = programaService.comentarPrograma(idPrograma, request);
+        AUDIT_LOGGER.infof("Comentario actualizado programa ID=%d", idPrograma);
+        return Response.ok(resultado).build();
     }
-
-
-
 
 
 }

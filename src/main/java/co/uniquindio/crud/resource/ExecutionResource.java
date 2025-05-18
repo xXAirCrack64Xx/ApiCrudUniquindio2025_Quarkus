@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
 
-@Path("api/v1/programas/{id}/ejecutar")
+@Path("api/v1/programas/{id}/ejecuciones")
 @Produces(MediaType.APPLICATION_JSON)
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
 public class ExecutionResource {
@@ -20,6 +20,8 @@ public class ExecutionResource {
     private final ProgramaExecutionService executionService;
 
     @POST
+
+    @Produces(MediaType.APPLICATION_JSON)
     public Response ejecutar(@PathParam("id") Long id) {
         LOGGER.info("Ejecutando el programa con id");
         ExecutionResponseDTO result = executionService.ejecutarPrograma(id);

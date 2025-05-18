@@ -1,9 +1,10 @@
 package co.uniquindio.crud.service.implementations;
 
+import co.uniquindio.crud.dto.comment.ComentarioRequestDTO;
+import co.uniquindio.crud.dto.comment.ComentarioResponseDTO;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
-import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
 import co.uniquindio.crud.entity.program.Comentario;
 import co.uniquindio.crud.entity.program.Programa;
 import co.uniquindio.crud.entity.user.Usuario;
@@ -12,9 +13,8 @@ import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
 import co.uniquindio.crud.repository.ComentarioRepository;
 import co.uniquindio.crud.repository.ProgramaRepository;
 import co.uniquindio.crud.repository.UsuarioRepository;
-import co.uniquindio.crud.resource.UsuarioResource;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
-import co.uniquindio.crud.service.interfaces.UsuarioService;
+import co.uniquindio.crud.service.mappers.ComentarioMapper;
 import co.uniquindio.crud.service.mappers.ProgramaMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -33,6 +33,7 @@ public class ProgramaServiceImpl implements ProgramaService {
     private static final Logger LOGGER = Logger.getLogger(ProgramaServiceImpl.class);
     private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
 
+    private final ComentarioMapper comentarioMapper;
     private final ProgramaRepository programaRepository;
     private final ProgramaMapper programaMapper;
     private final UsuarioRepository usuarioRepository;
@@ -117,16 +118,17 @@ public class ProgramaServiceImpl implements ProgramaService {
                 .orElseThrow(() -> new ProgramaNotFoundException(idPrograma));
 
         entity.setNota(notaNueva);
+        programaRepository.flush();
 
         AUDIT_LOGGER.infof("Nota actualizada a %d para el programa con ID=%d", notaNueva, idPrograma);
 
-        return "Nota actualizada correctamente para el programa " + entity.getTitulo();
+        return "Nota actualizada correctamente para el programa '" + entity.getTitulo() + "', nota: " + notaNueva;
     }
 
     @Transactional
     @Override
-    public String comentarPrograma(Long idPrograma, Long idProfesor, String comentario) {
-        LOGGER.infof("Inicio del método comentarPrograma para Programa ID=%d, Profesor ID=%d", idPrograma, idProfesor);
+    public ComentarioResponseDTO comentarPrograma(Long idPrograma, ComentarioRequestDTO request) {
+        LOGGER.infof("Inicio del método comentarPrograma para Programa ID=%d, Profesor ID=%d", idPrograma, request.idProfesor());
 
         try {
             // Buscar el programa, si no existe lanza excepción
@@ -136,22 +138,20 @@ public class ProgramaServiceImpl implements ProgramaService {
             LOGGER.debugf("Programa encontrado: %s (ID=%d)", entity.getTitulo(), idPrograma);
 
             // Crear nuevo comentario y asignar datos
-            Comentario coment = new Comentario();
-            coment.setPrograma(entity);
-            coment.setComentario(comentario);
-            coment.setIdProfesor(idProfesor);
+            Comentario coment = comentarioMapper.toEntity(request, entity);
 
             // Persistir comentario en base de datos
             comentarioRepository.persist(coment);
-            LOGGER.debugf("Comentario persistido para Programa ID=%d por Profesor ID=%d", idPrograma, idProfesor);
+            LOGGER.debugf("Comentario persistido para Programa ID=%d por Profesor ID=%d", idPrograma, request.idProfesor());
 
             // Asociar comentario al programa y actualizar entidad
-            entity.setComentario(coment);
+            entity.getComentarios().add(coment);
+            programaRepository.flush();
 
             AUDIT_LOGGER.infof("Comentario actualizado para el programa con ID=%d", idPrograma);
 
             LOGGER.infof("Comentario actualizado correctamente para el programa '%s'", entity.getTitulo());
-            return "Comentario actualizado correctamente para el programa " + entity.getTitulo();
+            return comentarioMapper.toResponse(coment);
 
         } catch (ProgramaNotFoundException e) {
             LOGGER.errorf("No se encontró el programa con ID=%d", idPrograma);

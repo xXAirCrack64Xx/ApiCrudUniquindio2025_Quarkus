@@ -1,8 +1,11 @@
 package co.uniquindio.crud.service.interfaces;
 
+import co.uniquindio.crud.dto.comment.ComentarioRequestDTO;
+import co.uniquindio.crud.dto.comment.ComentarioResponseDTO;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
+import jakarta.transaction.Transactional;
 
 public interface ProgramaService {
     ProgramaResponseDTO crearPrograma(ProgramaRequestDTO request);
@@ -17,5 +20,6 @@ public interface ProgramaService {
 
     String calificarPrograma (Long idPrograma, Long notaNueva);
 
-    String comentarPrograma (Long idPrograma, Long idProfesor, String comentario);
+    @Transactional
+    ComentarioResponseDTO comentarPrograma(Long idPrograma, ComentarioRequestDTO request);
 }

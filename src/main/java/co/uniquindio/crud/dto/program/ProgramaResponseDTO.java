@@ -1,5 +1,6 @@
 package co.uniquindio.crud.dto.program;
 
+import java.util.List;
 import java.util.Set;
 
 public record ProgramaResponseDTO(
@@ -10,8 +11,9 @@ public record ProgramaResponseDTO(
         String dificultad,
         String tema,
         Long autorId,
-        Set<Long> usuarioIds,
-        Set<Long> claseIds,
+        List<String> comentarios,
+        Set<Long> usuariosCompartidosIds,
+        Set<Long> clasesCompartidasIds,
 
         Long nota
 

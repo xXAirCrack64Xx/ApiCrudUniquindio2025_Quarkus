@@ -8,13 +8,15 @@ import co.uniquindio.crud.entity.user.Usuario;
 import co.uniquindio.crud.entity.clase.Clase;
 import org.mapstruct.*;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
 /**
  * Mapper para convertir entre DTOs de Programa y la entidad Programa usando MapStruct.
  */
-@Mapper(componentModel = "cdi", imports = {HashSet.class, EstadoPrograma.class, Collectors.class, Usuario.class, Clase.class})
+@Mapper(componentModel = "cdi", imports = {Collectors.class, Collections.class, Usuario.class, Clase.class, HashSet.class,
+                                                EstadoPrograma.class})
 public interface ProgramaMapper {
 
     /**
@@ -34,17 +36,30 @@ public interface ProgramaMapper {
     /**
      * Convierte la entidad Programa a DTO de respuesta.
      */
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "titulo", source = "titulo")
-    @Mapping(target = "descripcion", source = "descripcion")
-    @Mapping(target = "codigoFuente", source = "codigoFuente")
-    @Mapping(target = "dificultad", source = "dificultad")
-    @Mapping(target = "nota", source = "nota")
+    @Mapping(target = "id",         source = "programa.id")
+    @Mapping(target = "titulo",     source = "programa.titulo")
+    @Mapping(target = "descripcion",source = "programa.descripcion")
+    @Mapping(target = "codigoFuente", source = "programa.codigoFuente")
+    @Mapping(target = "dificultad", source = "programa.dificultad")
+    @Mapping(target = "tema",       source = "programa.tema")
+    @Mapping(target = "nota",       source = "programa.nota")
 
-
-    @Mapping(target = "autorId", expression = "java(programa.getAutor()!=null?programa.getAutor().getId():null)")
-    @Mapping(target = "usuarioIds", expression = "java(programa.getCompartidoConUsuarios().stream().map(Usuario::getId).collect(Collectors.toSet()))")
-    @Mapping(target = "claseIds", expression = "java(programa.getCompartidoConClases().stream().map(Clase::getId).collect(Collectors.toSet()))")
+    @Mapping(
+            target = "autorId",
+            expression = "java(programa.getAutor() != null ? programa.getAutor().getId() : null)"
+    )
+    @Mapping(
+            target = "comentarios",
+            expression = "java(programa.getComentarios() != null ? programa.getComentarios().stream().map(c -> c.getComentario()).collect(Collectors.toList()) : Collections.emptyList())"
+    )
+    @Mapping(
+            target = "usuariosCompartidosIds",
+            expression = "java(programa.getCompartidoConUsuarios() != null ? programa.getCompartidoConUsuarios().stream().map(Usuario::getId).collect(Collectors.toSet()) : Collections.emptySet())"
+    )
+    @Mapping(
+            target = "clasesCompartidasIds",
+            expression = "java(programa.getCompartidoConClases()  != null ? programa.getCompartidoConClases().stream().map(Clase::getId).collect(Collectors.toSet()) : Collections.emptySet())"
+    )
     ProgramaResponseDTO toResponse(Programa programa);
 
     /**
