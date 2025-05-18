@@ -27,8 +27,15 @@ public class Programa {
 
     private String dificultad;
 
-
     private String tema;
+
+    //añadí estos dos atributos para gestionar los comentarios y la calificacion del programa
+    private Long nota;
+
+    @OneToOne(mappedBy = "programa", cascade = CascadeType.ALL)
+    private Comentario comentario;
+
+
 
     @Enumerated(EnumType.STRING)
     private EstadoPrograma estadoPrograma;
@@ -45,5 +52,9 @@ public class Programa {
 
     @ManyToMany
     private Set<Clase> compartidoConClases;
+
+
+
+
 
 }

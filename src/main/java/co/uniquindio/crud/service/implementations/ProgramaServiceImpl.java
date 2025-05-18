@@ -4,10 +4,12 @@ import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
 import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
+import co.uniquindio.crud.entity.program.Comentario;
 import co.uniquindio.crud.entity.program.Programa;
 import co.uniquindio.crud.entity.user.Usuario;
 import co.uniquindio.crud.exception.program.ProgramaAlreadyExistsException;
 import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
+import co.uniquindio.crud.repository.ComentarioRepository;
 import co.uniquindio.crud.repository.ProgramaRepository;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.resource.UsuarioResource;
@@ -34,6 +36,7 @@ public class ProgramaServiceImpl implements ProgramaService {
     private final ProgramaRepository programaRepository;
     private final ProgramaMapper programaMapper;
     private final UsuarioRepository usuarioRepository;
+    private final ComentarioRepository comentarioRepository;
 
     @Override
     @Transactional
@@ -98,4 +101,67 @@ public class ProgramaServiceImpl implements ProgramaService {
         }
         AUDIT_LOGGER.infof("Programa eliminado con ID=%d", id);
     }
+
+
+    @Transactional
+    @Override
+    public String calificarPrograma(Long idPrograma, Long notaNueva) {
+
+        LOGGER.infof("Calificando programa con ID=%d", idPrograma);
+
+        if (notaNueva < 0 || notaNueva > 5) {
+            throw new IllegalArgumentException("La nota debe estar entre 0 y 5.");
+        }
+
+        Programa entity = programaRepository.findByIdOptional(idPrograma)
+                .orElseThrow(() -> new ProgramaNotFoundException(idPrograma));
+
+        entity.setNota(notaNueva);
+
+        AUDIT_LOGGER.infof("Nota actualizada a %d para el programa con ID=%d", notaNueva, idPrograma);
+
+        return "Nota actualizada correctamente para el programa " + entity.getTitulo();
+    }
+
+    @Transactional
+    @Override
+    public String comentarPrograma(Long idPrograma, Long idProfesor, String comentario) {
+        LOGGER.infof("Inicio del método comentarPrograma para Programa ID=%d, Profesor ID=%d", idPrograma, idProfesor);
+
+        try {
+            // Buscar el programa, si no existe lanza excepción
+            Programa entity = programaRepository.findByIdOptional(idPrograma)
+                    .orElseThrow(() -> new ProgramaNotFoundException(idPrograma));
+
+            LOGGER.debugf("Programa encontrado: %s (ID=%d)", entity.getTitulo(), idPrograma);
+
+            // Crear nuevo comentario y asignar datos
+            Comentario coment = new Comentario();
+            coment.setPrograma(entity);
+            coment.setComentario(comentario);
+            coment.setIdProfesor(idProfesor);
+
+            // Persistir comentario en base de datos
+            comentarioRepository.persist(coment);
+            LOGGER.debugf("Comentario persistido para Programa ID=%d por Profesor ID=%d", idPrograma, idProfesor);
+
+            // Asociar comentario al programa y actualizar entidad
+            entity.setComentario(coment);
+
+            AUDIT_LOGGER.infof("Comentario actualizado para el programa con ID=%d", idPrograma);
+
+            LOGGER.infof("Comentario actualizado correctamente para el programa '%s'", entity.getTitulo());
+            return "Comentario actualizado correctamente para el programa " + entity.getTitulo();
+
+        } catch (ProgramaNotFoundException e) {
+            LOGGER.errorf("No se encontró el programa con ID=%d", idPrograma);
+            throw e; // O manejarlo de acuerdo a tu política de errores
+
+        } catch (Exception e) {
+            LOGGER.errorf(e, "Error inesperado al comentar programa con ID=%d", idPrograma);
+            throw e; // O manejar la excepción de otra forma
+        }
+    }
+
+
 }
