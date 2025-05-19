@@ -10,6 +10,7 @@ import co.uniquindio.crud.exception.user.NoUsuariosRegistradosException;
 import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
 import co.uniquindio.crud.exception.user.UsuarioYaExisteException;
 import co.uniquindio.crud.repository.UsuarioRepository;
+import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -39,6 +40,9 @@ public class UsuarioServiceImplements implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+
+    @Inject
+    EmailService emailService;
 
     /**
      * Obtiene un usuario activo por su identificador.
@@ -115,6 +119,11 @@ public class UsuarioServiceImplements implements UsuarioService {
         usuarioRepository.persist(nuevoUsuario);
         LOGGER.infov("Usuario creado exitosamente con ID: {0}", nuevoUsuario.getId());
         AUDIT_LOGGER.infov("AUDIT: Creación | ID: {0} | Email: {1}", nuevoUsuario.getId(), usuarioDTO.email());
+
+        // apartado de envío del correo
+        emailService.enviarCorreo(nuevoUsuario.getEmail(), "Su usuario ha sido creado con éxito");
+
+
         return usuarioMapper.toResponseDTO(nuevoUsuario);
     }
 

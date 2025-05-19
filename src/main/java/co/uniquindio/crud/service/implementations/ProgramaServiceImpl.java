@@ -13,6 +13,7 @@ import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
 import co.uniquindio.crud.repository.ComentarioRepository;
 import co.uniquindio.crud.repository.ProgramaRepository;
 import co.uniquindio.crud.repository.UsuarioRepository;
+import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
 import co.uniquindio.crud.service.mappers.ComentarioMapper;
 import co.uniquindio.crud.service.mappers.ProgramaMapper;
@@ -38,6 +39,11 @@ public class ProgramaServiceImpl implements ProgramaService {
     private final ProgramaMapper programaMapper;
     private final UsuarioRepository usuarioRepository;
     private final ComentarioRepository comentarioRepository;
+
+    @Inject
+    EmailService emailService;
+
+
 
     @Override
     @Transactional
@@ -122,7 +128,13 @@ public class ProgramaServiceImpl implements ProgramaService {
 
         AUDIT_LOGGER.infof("Nota actualizada a %d para el programa con ID=%d", notaNueva, idPrograma);
 
+        // apartado de envío del correo
+        Usuario user = entity.getAutor();
+        emailService.enviarCorreo(user.getEmail(), "Su programa ha sido calificado por el profesor");
+
+
         return "Nota actualizada correctamente para el programa '" + entity.getTitulo() + "', nota: " + notaNueva;
+
     }
 
     @Transactional
@@ -151,6 +163,12 @@ public class ProgramaServiceImpl implements ProgramaService {
             AUDIT_LOGGER.infof("Comentario actualizado para el programa con ID=%d", idPrograma);
 
             LOGGER.infof("Comentario actualizado correctamente para el programa '%s'", entity.getTitulo());
+
+            // apartado de envío del correo
+            Usuario user = entity.getAutor();
+            emailService.enviarCorreo(user.getEmail(), "Su programa ha sido comentado por el profesor");
+
+
             return comentarioMapper.toResponse(coment);
 
         } catch (ProgramaNotFoundException e) {

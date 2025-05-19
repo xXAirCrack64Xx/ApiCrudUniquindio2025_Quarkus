@@ -6,6 +6,7 @@ import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
 import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
+import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -36,6 +37,9 @@ public class ProgramaResource {
     private static final Logger LOGGER = Logger.getLogger(ProgramaResource.class);
     private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
     private final ProgramaService programaService;
+
+    @Inject
+    EmailService emailService;
 
     @Context
     UriInfo uriInfo;
@@ -146,6 +150,8 @@ public class ProgramaResource {
 
         ComentarioResponseDTO resultado = programaService.comentarPrograma(idPrograma, request);
         AUDIT_LOGGER.infof("Comentario actualizado programa ID=%d", idPrograma);
+
+
         return Response.ok(resultado).build();
     }
 
