@@ -1,18 +1,23 @@
 package co.uniquindio.crud.service.implementations;
 
+import co.uniquindio.crud.dto.ejemplo.CompartirConClasesRequest;
 import co.uniquindio.crud.dto.ejemplo.ProgramaEjemploRequestDto;
 import co.uniquindio.crud.dto.ejemplo.ProgramaEjemploResponse;
 import co.uniquindio.crud.dto.program.PagedResponse;
+import co.uniquindio.crud.entity.clase.Clase;
 import co.uniquindio.crud.entity.program.Programa;
 import co.uniquindio.crud.entity.program.TipoPrograma;
 import co.uniquindio.crud.entity.user.Usuario;
+import co.uniquindio.crud.exception.clase.ClaseNotFoundException;
 import co.uniquindio.crud.exception.program.ProgramaAlreadyExistsException;
 import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
 import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
+import co.uniquindio.crud.repository.ClaseRepository;
 import co.uniquindio.crud.repository.ProgramaRepository;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.interfaces.EjemploService;
 import co.uniquindio.crud.service.mappers.ProgramaEjemploMapper;
+import co.uniquindio.crud.utils.ResourceOwnerValidatorImpl;
 import co.uniquindio.crud.utils.SecurityUtils;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.annotation.security.RolesAllowed;
@@ -22,7 +27,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
@@ -34,6 +42,8 @@ public class EjemploServiceImplements implements EjemploService {
     private final ProgramaEjemploMapper ejemploMapper;
     private final UsuarioRepository usuarioRepository;
     private final SecurityUtils securityUtils;
+    private final ClaseRepository claseRepository;
+    private final ResourceOwnerValidatorImpl resourceOwner;
 
     @Override
     public List<ProgramaEjemploResponse> obtenerEjemplosPorTema(String tema) {
@@ -116,6 +126,8 @@ public class EjemploServiceImplements implements EjemploService {
                 .firstResultOptional()
                 .orElseThrow(() -> new ProgramaNotFoundException(id));
 
+        resourceOwner.isResourceOwner(ejemplo.getAutor().getId());
+
         ejemploMapper.updateEntity(request, ejemplo);
         programaRepository.persist(ejemplo);
 
@@ -129,11 +141,45 @@ public class EjemploServiceImplements implements EjemploService {
     public void eliminarEjemplo(Long id) {
         LOGGER.infof("Eliminando ejemplo ID=%d", id);
 
+        resourceOwner.isResourceOwner(id);
         long deleted = programaRepository.delete("id = ?1 and tipoPrograma = ?2", id, TipoPrograma.EJEMPLO);
         if (deleted == 0) {
             throw new ProgramaNotFoundException(id);
         }
 
         AUDIT_LOGGER.infof("Ejemplo eliminado ID=%d", id);
+    }
+
+
+    @Override
+    @Transactional
+    @RolesAllowed("PROFESOR")
+    public ProgramaEjemploResponse compartirConClases(Long idPrograma, CompartirConClasesRequest request) {
+        // Validar que el programa exista
+        Programa programa = programaRepository.findByIdOptional(idPrograma)
+                .orElseThrow(() -> new ProgramaNotFoundException(idPrograma));
+
+
+        // Obtener clases válidas
+        Set<Clase> clases = claseRepository
+                .find("id in ?1", request.idsClases())
+                .stream()
+                .collect(Collectors.toSet());
+
+        // Validar que todas las clases existan
+        if (clases.size() != request.idsClases().size()) {
+            List<Long> idsNoEncontrados = request.idsClases().stream()
+                    .filter(id -> clases.stream().noneMatch(c -> c.getId().equals(id))).toList();
+            throw new ClaseNotFoundException("Clases no encontradas: " + idsNoEncontrados);
+        }
+
+        // Agregar al conjunto de compartidos
+        if (programa.getCompartidoConClases() == null) {
+            programa.setCompartidoConClases(new HashSet<>());
+        }
+        programa.getCompartidoConClases().addAll(clases);
+
+        programaRepository.persist(programa);
+        return ejemploMapper.toResponse(programa);
     }
 }

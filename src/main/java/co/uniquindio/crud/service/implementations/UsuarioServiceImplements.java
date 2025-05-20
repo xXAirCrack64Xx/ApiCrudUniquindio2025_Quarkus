@@ -4,15 +4,20 @@ import co.uniquindio.crud.dto.user.PaginacionUserResponseDTO;
 import co.uniquindio.crud.dto.user.ParcialUserUpdate;
 import co.uniquindio.crud.dto.user.UsuarioDTO;
 import co.uniquindio.crud.dto.user.UsuarioResponseDTO;
+import co.uniquindio.crud.entity.clase.Clase;
 import co.uniquindio.crud.entity.user.EstadoCuenta;
 import co.uniquindio.crud.entity.user.Usuario;
+import co.uniquindio.crud.exception.clase.ClaseNotFoundException;
 import co.uniquindio.crud.exception.user.NoUsuariosRegistradosException;
 import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
 import co.uniquindio.crud.exception.user.UsuarioYaExisteException;
+import co.uniquindio.crud.repository.ClaseRepository;
 import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
+import co.uniquindio.crud.utils.ResourceOwnerValidatorImpl;
+import co.uniquindio.crud.utils.SecurityUtils;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,7 +48,9 @@ public class UsuarioServiceImplements implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
-
+    private final SecurityUtils securityUtils;
+    private final ClaseRepository claseRepository;
+    private final ResourceOwnerValidatorImpl resourceOwner;
     private final EmailService emailService;
 
     /**
@@ -238,6 +245,7 @@ public class UsuarioServiceImplements implements UsuarioService {
             LOGGER.warnv("Usuario no encontrado con ID: {0}", id);
             throw new UsuarioNotFoundException(id);
         }
+        resourceOwner.isResourceOwner(id);
         usuario.setEstadoCuenta(EstadoCuenta.ELIMINADA);
         usuarioRepository.persist(usuario);
         LOGGER.infov("Usuario ID: {0} eliminado exitosamente", id);
@@ -250,5 +258,72 @@ public class UsuarioServiceImplements implements UsuarioService {
     public UsuarioResponseDTO findbyemail (String email){
         Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsuarioNotFoundException(email));
         return usuarioMapper.toResponseDTO(usuario);
+    }
+
+
+    @Override
+    @Transactional
+    @RolesAllowed("ESTUDIANTE")
+    public UsuarioResponseDTO inscribirEnClase(Long idClase) {
+
+        long idUsuario = securityUtils.getUserId().orElseThrow(() ->
+                new UsuarioNotFoundException(0L));
+
+        Usuario usuario = usuarioRepository.findActiveById(idUsuario);
+
+        // Validar que la clase exista
+        Clase clase = claseRepository.findByIdOptional(idClase)
+                .orElseThrow(() -> new ClaseNotFoundException("clase no encontrada: " + idClase));
+
+
+        // Validar que el usuario no esté ya inscrito
+        if (usuario.getClasesComoEstudiante().contains(clase)) {
+            throw new RuntimeException("El usuario ya está inscrito en esta clase");
+        }
+
+        // Inscribir al usuario
+        usuario.getClasesComoEstudiante().add(clase);
+        clase.getEstudiantes().add(usuario);
+
+        // Actualizar fechas
+        usuario.setFechaActualizacion(LocalDateTime.now());
+
+        usuarioRepository.persist(usuario);
+        claseRepository.persist(clase);
+
+        return usuarioMapper.toResponseDTO(usuario);
+    }
+
+
+    @Override
+    @Transactional
+    @RolesAllowed("ESTUDIANTE")
+    public void cancelarInscripcionClase(Long idClase) {
+        // Obtener el ID del usuario autenticado
+        long idUsuario = securityUtils.getUserId()
+                .orElseThrow(() -> new UsuarioNotFoundException(0L));
+
+        // Obtener usuario activo
+        Usuario usuario = usuarioRepository.findActiveById(idUsuario);
+
+        // Validar que la clase exista
+        Clase clase = claseRepository.findByIdOptional(idClase)
+                .orElseThrow(() -> new ClaseNotFoundException("Clase no encontrada: " + idClase));
+
+        // Validar que el usuario esté inscrito en la clase
+        if (!usuario.getClasesComoEstudiante().contains(clase)) {
+            throw new RuntimeException("El usuario no está inscrito en esta clase");
+        }
+
+        // Remover la relación en ambos sentidos
+        usuario.getClasesComoEstudiante().remove(clase);
+        clase.getEstudiantes().remove(usuario);
+
+        // Actualizar fechas
+        usuario.setFechaActualizacion(LocalDateTime.now());
+
+        // Persistir cambios
+        usuarioRepository.persist(usuario);
+        claseRepository.persist(clase);
     }
 }

@@ -4,12 +4,17 @@ import co.uniquindio.crud.dto.clase.ClaseRequestDTO;
 import co.uniquindio.crud.dto.clase.ClaseResponseDTO;
 import co.uniquindio.crud.entity.clase.Clase;
 import co.uniquindio.crud.entity.clase.ClaseStatus;
+import co.uniquindio.crud.entity.user.Usuario;
 import co.uniquindio.crud.exception.clase.ClaseAlreadyExistsException;
 import co.uniquindio.crud.exception.clase.ClaseNotFoundException;
+import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
 import co.uniquindio.crud.repository.ClaseRepository;
+import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.resource.ClaseResource;
 import co.uniquindio.crud.service.interfaces.ClaseService;
 import co.uniquindio.crud.service.mappers.ClaseMapper;
+import co.uniquindio.crud.utils.ResourceOwnerValidatorImpl;
+import co.uniquindio.crud.utils.SecurityUtils;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -38,7 +43,10 @@ public class ClaseServiceImplements implements ClaseService {
 
     private final ClaseRepository claseRepository;
     private final ClaseMapper claseMapper;
-    private static final Logger LOGGER = Logger.getLogger(ClaseResource.class);
+    private final SecurityUtils securityUtils;
+    private final UsuarioRepository usuarioRepository;
+    private final ResourceOwnerValidatorImpl resourceOwner;
+    private static final Logger LOGGER = Logger.getLogger(ClaseServiceImplements.class);
     private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
 
 
@@ -66,6 +74,13 @@ public class ClaseServiceImplements implements ClaseService {
         }
         // Mapeo a entidad y persistencia
         Clase entity = claseMapper.toEntity(request);
+
+        long profesorId = securityUtils.getUserId().orElseThrow(() ->
+                new UsuarioNotFoundException(Long.valueOf(0)));
+
+        Usuario usuario = usuarioRepository.findActiveById(profesorId);
+
+        entity.setProfesor(usuario);
         claseRepository.persist(entity);
         AUDIT_LOGGER.infof("Clase creada con ID=%d", entity.getId());
         return claseMapper.toResponse(entity);
@@ -123,6 +138,8 @@ public class ClaseServiceImplements implements ClaseService {
         LOGGER.infof("Actualizando clase con ID=%d", id);
         Clase entity = claseRepository.findClaseById(id)
                 .orElseThrow(() -> new ClaseNotFoundException("Clase con ID '" + id + "' no encontrada"));
+
+        resourceOwner.isResourceOwner(entity.getProfesor().getId());
         claseMapper.updateEntity(request, entity);
         claseRepository.flush(); // aplica los cambios
         AUDIT_LOGGER.infof("Clase actualizada con ID=%d", entity.getId());
@@ -147,6 +164,7 @@ public class ClaseServiceImplements implements ClaseService {
         LOGGER.infof("Eliminando clase con ID=%d", id);
         Clase claseDeleted = claseRepository.findClaseById(id)
                 .orElseThrow(() -> new ClaseNotFoundException("Clase con ID '" + id + "' no encontrada"));
+        resourceOwner.isResourceOwner(claseDeleted.getProfesor().getId());
         claseDeleted.setClaseStatus(ClaseStatus.DELETED);
         claseRepository.flush();
         AUDIT_LOGGER.infof("Clase eliminada con ID=%d", id);

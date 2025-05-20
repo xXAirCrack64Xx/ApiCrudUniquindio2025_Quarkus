@@ -2,6 +2,7 @@ package co.uniquindio.crud.resource;
 
 import co.uniquindio.crud.dto.comment.ComentarioRequestDTO;
 import co.uniquindio.crud.dto.comment.ComentarioResponseDTO;
+import co.uniquindio.crud.dto.program.CompartirConUsuariosRequest;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
@@ -41,6 +42,17 @@ public class ProgramaResource {
     @Context
     UriInfo uriInfo;
 
+
+    @PATCH
+    @Path("/{idPrograma}/usuarios")
+    public Response compartirConUsuarios(
+            @PathParam("idPrograma") Long idPrograma,
+            @Valid CompartirConUsuariosRequest request) {
+
+        ProgramaResponseDTO response = programaService.compartirConUsuarios(idPrograma, request);
+        return Response.ok(response).build();
+    }
+
     /**
      * Crea un nuevo programa.
      * @param request DTO con datos para creación.
@@ -57,20 +69,6 @@ public class ProgramaResource {
         return Response.created(uri).entity(created).build();
     }
 
-    /**
-     * Obtiene todos los programas con paginación.
-     * @param page número de página (1-based).
-     * @param size tamaño de página.
-     * @return PagedResponse con lista de DTOs y metadatos.
-     */
-    @GET
-    public Response listarProgramas(
-            @QueryParam("page") @DefaultValue("1") int page,
-            @QueryParam("size") @DefaultValue("10") int size) {
-        LOGGER.infof("Listando programas - página %d, tamaño %d", page, size);
-        PagedResponse<ProgramaResponseDTO> paged = programaService.listarProgramas(page, size);
-        return Response.ok(paged).build();
-    }
 
     /**
      * Obtiene un programa por ID.

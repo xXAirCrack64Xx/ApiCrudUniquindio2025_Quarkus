@@ -17,4 +17,7 @@ public interface UsuarioService {
     void deleteUsuario(Long id);
     UsuarioResponseDTO findbyemail(String email);
 
+    UsuarioResponseDTO inscribirEnClase(Long idClase);
+
+    void cancelarInscripcionClase(Long idClase);
 }

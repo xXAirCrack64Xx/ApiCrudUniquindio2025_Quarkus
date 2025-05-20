@@ -2,6 +2,7 @@ package co.uniquindio.crud.service.implementations;
 
 import co.uniquindio.crud.dto.comment.ComentarioRequestDTO;
 import co.uniquindio.crud.dto.comment.ComentarioResponseDTO;
+import co.uniquindio.crud.dto.program.CompartirConUsuariosRequest;
 import co.uniquindio.crud.dto.program.PagedResponse;
 import co.uniquindio.crud.dto.program.ProgramaRequestDTO;
 import co.uniquindio.crud.dto.program.ProgramaResponseDTO;
@@ -18,6 +19,7 @@ import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
 import co.uniquindio.crud.service.mappers.ComentarioMapper;
 import co.uniquindio.crud.service.mappers.ProgramaMapper;
+import co.uniquindio.crud.utils.ResourceOwnerValidatorImpl;
 import co.uniquindio.crud.utils.SecurityUtils;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -27,7 +29,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -45,6 +49,7 @@ public class ProgramaServiceImpl implements ProgramaService {
     private final SecurityUtils securityUtils;
     private final ComentarioRepository comentarioRepository;
     private final EmailService emailService;
+    private final ResourceOwnerValidatorImpl resourceOwner;
 
 
     @Override
@@ -69,19 +74,6 @@ public class ProgramaServiceImpl implements ProgramaService {
         return programaMapper.toResponse(entity);
     }
 
-    @Override
-    @Authenticated
-    public PagedResponse<ProgramaResponseDTO> listarProgramas(int page, int size) {
-        LOGGER.infof("Listando programas página=%d, tamaño=%d", page, size);
-        long total = programaRepository.count();
-        List<ProgramaResponseDTO> items = programaRepository.findAll()
-                .page(page - 1, size)
-                .list()
-                .stream()
-                .map(programaMapper::toResponse).toList();
-        int totalPages = (int) Math.ceil((double) total / size);
-        return new PagedResponse<>(items, page, size, total, totalPages);
-    }
 
     @Override
     @Authenticated
@@ -89,6 +81,7 @@ public class ProgramaServiceImpl implements ProgramaService {
         LOGGER.infof("Obteniendo programa con ID=%d", id);
         Programa entity = programaRepository.findByIdOptional(id)
                 .orElseThrow(() -> new ProgramaNotFoundException(id));
+        resourceOwner.hasSharedAccessToPrograma(id);
         return programaMapper.toResponse(entity);
     }
 
@@ -99,6 +92,7 @@ public class ProgramaServiceImpl implements ProgramaService {
         LOGGER.infof("Actualizando programa con ID=%d", id);
         Programa entity = programaRepository.findByIdOptional(id)
                 .orElseThrow(() -> new ProgramaNotFoundException(id));
+        resourceOwner.isResourceOwner(id);
         programaMapper.updateEntity(request, entity);
         programaRepository.flush();
         AUDIT_LOGGER.infof("Programa actualizado con ID=%d", id);
@@ -110,6 +104,7 @@ public class ProgramaServiceImpl implements ProgramaService {
     @Authenticated
     public void eliminarPrograma(Long id) {
         LOGGER.infof("Eliminando programa con ID=%d", id);
+        resourceOwner.isResourceOwner(id);
         boolean deleted = programaRepository.deleteById(id);
         if (!deleted) {
             LOGGER.warnf("No se encontró programa con ID=%d para eliminar", id);
@@ -193,6 +188,38 @@ public class ProgramaServiceImpl implements ProgramaService {
             LOGGER.errorf(e, "Error inesperado al comentar programa con ID=%d", idPrograma);
             throw e; // O manejar la excepción de otra forma
         }
+    }
+
+    @Override
+    @Transactional
+    public ProgramaResponseDTO compartirConUsuarios(Long idPrograma, CompartirConUsuariosRequest request) {
+        // Validar que el programa exista
+        Programa programa = programaRepository.findByIdOptional(idPrograma)
+                .orElseThrow(() -> new ProgramaNotFoundException(idPrograma));
+
+
+
+        // Obtener usuarios válidos
+        Set<Usuario> usuarios = usuarioRepository
+                .find("id in ?1", request.idsUsuarios())
+                .stream()
+                .collect(Collectors.toSet());
+
+        // Validar que todos los usuarios existan
+        if (usuarios.size() != request.idsUsuarios().size()) {
+            List<Long> idsNoEncontrados = request.idsUsuarios().stream()
+                    .filter(id -> usuarios.stream().noneMatch(u -> u.getId().equals(id))).toList();
+            throw new UsuarioNotFoundException("Usuarios no encontrados: " + idsNoEncontrados);
+        }
+
+        // Agregar al conjunto de compartidos
+        if (programa.getCompartidoConUsuarios() == null) {
+            programa.setCompartidoConUsuarios(new HashSet<>());
+        }
+        programa.getCompartidoConUsuarios().addAll(usuarios);
+
+        programaRepository.persist(programa);
+        return programaMapper.toResponse(programa);
     }
 
 

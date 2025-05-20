@@ -260,5 +260,21 @@ public class UsuarioResource {
     }
 
 
+    @PATCH
+    @Path("/clases/{idClase}")
+    public Response inscribirEnClase(
+            @PathParam("idClase") Long idClase) {
+
+        UsuarioResponseDTO response = usuarioService.inscribirEnClase(idClase);
+        return Response.ok(response).build();
+    }
+
+    @DELETE
+    @Path("/clases/{idClase}")
+    public Response cancelarInscripcionClase(@PathParam("idClase") Long idClase) {
+        usuarioService.cancelarInscripcionClase(idClase);
+        return Response.noContent().build();
+    }
+
 
 }

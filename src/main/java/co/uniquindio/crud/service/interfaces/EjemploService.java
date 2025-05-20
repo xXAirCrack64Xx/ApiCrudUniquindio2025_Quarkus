@@ -1,5 +1,6 @@
 package co.uniquindio.crud.service.interfaces;
 
+import co.uniquindio.crud.dto.ejemplo.CompartirConClasesRequest;
 import co.uniquindio.crud.dto.ejemplo.ProgramaEjemploRequestDto;
 import co.uniquindio.crud.dto.ejemplo.ProgramaEjemploResponse;
 import co.uniquindio.crud.dto.program.PagedResponse;
@@ -18,4 +19,6 @@ public interface EjemploService {
     ProgramaEjemploResponse actualizarEjemplo(Long id, ProgramaEjemploRequestDto request);
 
     void eliminarEjemplo(Long id);
+
+    ProgramaEjemploResponse compartirConClases(Long idPrograma, CompartirConClasesRequest request);
 }

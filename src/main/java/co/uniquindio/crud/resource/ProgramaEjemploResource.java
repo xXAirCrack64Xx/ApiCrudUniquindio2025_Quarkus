@@ -1,5 +1,6 @@
 package co.uniquindio.crud.resource;
 
+import co.uniquindio.crud.dto.ejemplo.CompartirConClasesRequest;
 import co.uniquindio.crud.dto.ejemplo.ProgramaEjemploRequestDto;
 import co.uniquindio.crud.dto.ejemplo.ProgramaEjemploResponse;
 import co.uniquindio.crud.dto.program.PagedResponse;
@@ -107,6 +108,16 @@ public class ProgramaEjemploResource {
         ejemploService.eliminarEjemplo(id);
         AUDIT_LOGGER.infof("Ejemplo eliminado ID=%d", id);
         return Response.noContent().build();
+    }
+
+    @PATCH
+    @Path("/{idPrograma}/clases")
+    public Response compartirConClases(
+            @PathParam("idPrograma") Long idPrograma,
+            @Valid CompartirConClasesRequest request) {
+
+        ProgramaEjemploResponse response = ejemploService.compartirConClases(idPrograma, request);
+        return Response.ok(response).build();
     }
 
 }
