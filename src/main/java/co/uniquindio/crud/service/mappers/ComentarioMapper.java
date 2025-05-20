@@ -21,11 +21,11 @@ public interface ComentarioMapper {
      * Recibe además la entidad Programa para establecer la relación.
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "idProfesor", source = "dto.idProfesor")
+    @Mapping(target = "idProfesor", source = "autorId")
     @Mapping(target = "comentario", source = "dto.comentario")
     @Mapping(target = "programa", source = "programa")
     @Mapping(target = "fechaCreacion", expression = "java(LocalDateTime.now())")
-    Comentario toEntity(ComentarioRequestDTO dto, Programa programa);
+    Comentario toEntity(ComentarioRequestDTO dto, Programa programa, long autorId);
 
     /**
      * Mapea una entidad Comentario a su DTO de respuesta,

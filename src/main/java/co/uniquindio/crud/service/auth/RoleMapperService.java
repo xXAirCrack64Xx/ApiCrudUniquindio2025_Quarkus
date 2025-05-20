@@ -45,18 +45,18 @@ public class RoleMapperService {
         });
 
         Set<String> newRoles = new HashSet<>(identity.getRoles());
-        if (!newRoles.add(usuario.getRol().name())) {
-            log.debugv("Usuario {0} ya tenía rol {1}", email, usuario.getRol().name());
+        if (!newRoles.add(usuario.getOcupacion().name())) {
+            log.debugv("Usuario {0} ya tenía rol {1}", email, usuario.getOcupacion().name());
         } else {
-            log.infov("Rol {0} agregado a usuario {1}", usuario.getRol().name(), email);
+            log.infov("Rol {0} agregado a usuario {1}", usuario.getOcupacion().name(), email);
         }
 
         AUDIT_LOGGER.infov("AUDIT: Mapeo de roles | Usuario: {0} | Rol: {1}",
-                email, usuario.getRol().name());
+                email, usuario.getOcupacion().name());
 
         return QuarkusSecurityIdentity.builder(identity)
                 .addRoles(newRoles)
-                .addAttribute("ocupacion", usuario.getOcupacion())
+                .addAttribute("id", usuario.getId())
                 .build();
     }
 }

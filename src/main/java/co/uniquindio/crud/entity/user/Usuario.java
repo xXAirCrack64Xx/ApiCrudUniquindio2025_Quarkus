@@ -46,9 +46,6 @@ public class Usuario extends PanacheEntityBase {
     private OcupacionUsuario ocupacion;
 
     @Enumerated(EnumType.STRING)
-    private RolUsuario rol;
-
-    @Enumerated(EnumType.STRING)
     private EstadoCuenta estadoCuenta;
 
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)

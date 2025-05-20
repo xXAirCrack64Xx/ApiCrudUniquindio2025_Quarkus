@@ -10,6 +10,7 @@ import co.uniquindio.crud.entity.program.Programa;
 import co.uniquindio.crud.entity.user.Usuario;
 import co.uniquindio.crud.exception.program.ProgramaAlreadyExistsException;
 import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
+import co.uniquindio.crud.exception.user.UsuarioNotFoundException;
 import co.uniquindio.crud.repository.ComentarioRepository;
 import co.uniquindio.crud.repository.ProgramaRepository;
 import co.uniquindio.crud.repository.UsuarioRepository;
@@ -17,6 +18,9 @@ import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.interfaces.ProgramaService;
 import co.uniquindio.crud.service.mappers.ComentarioMapper;
 import co.uniquindio.crud.service.mappers.ProgramaMapper;
+import co.uniquindio.crud.utils.SecurityUtils;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -38,15 +42,15 @@ public class ProgramaServiceImpl implements ProgramaService {
     private final ProgramaRepository programaRepository;
     private final ProgramaMapper programaMapper;
     private final UsuarioRepository usuarioRepository;
+    private final SecurityUtils securityUtils;
     private final ComentarioRepository comentarioRepository;
-
-    @Inject
-    EmailService emailService;
+    private final EmailService emailService;
 
 
 
     @Override
     @Transactional
+    @Authenticated
     public ProgramaResponseDTO crearPrograma(ProgramaRequestDTO request) {
         LOGGER.infof("Intentando crear programa con titulo='%s'", request.titulo());
         boolean exists = programaRepository.find("titulo", request.titulo())
@@ -139,8 +143,9 @@ public class ProgramaServiceImpl implements ProgramaService {
 
     @Transactional
     @Override
+    @RolesAllowed("PROFESOR")
     public ComentarioResponseDTO comentarPrograma(Long idPrograma, ComentarioRequestDTO request) {
-        LOGGER.infof("Inicio del método comentarPrograma para Programa ID=%d, Profesor ID=%d", idPrograma, request.idProfesor());
+        LOGGER.infof("Inicio del método comentarPrograma para Programa ID=%d, Profesor ID=%d", idPrograma);
 
         try {
             // Buscar el programa, si no existe lanza excepción
@@ -150,11 +155,13 @@ public class ProgramaServiceImpl implements ProgramaService {
             LOGGER.debugf("Programa encontrado: %s (ID=%d)", entity.getTitulo(), idPrograma);
 
             // Crear nuevo comentario y asignar datos
-            Comentario coment = comentarioMapper.toEntity(request, entity);
+            long autorid = securityUtils.getUserId().orElseThrow(() ->
+                    new UsuarioNotFoundException(Long.valueOf(0)));
+            Comentario coment = comentarioMapper.toEntity(request, entity, autorid);
 
             // Persistir comentario en base de datos
             comentarioRepository.persist(coment);
-            LOGGER.debugf("Comentario persistido para Programa ID=%d por Profesor ID=%d", idPrograma, request.idProfesor());
+            LOGGER.debugf("Comentario persistido para Programa ID=%d por Profesor ID=%d", idPrograma);
 
             // Asociar comentario al programa y actualizar entidad
             entity.getComentarios().add(coment);

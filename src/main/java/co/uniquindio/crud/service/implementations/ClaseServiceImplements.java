@@ -10,6 +10,8 @@ import co.uniquindio.crud.repository.ClaseRepository;
 import co.uniquindio.crud.resource.ClaseResource;
 import co.uniquindio.crud.service.interfaces.ClaseService;
 import co.uniquindio.crud.service.mappers.ClaseMapper;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -53,6 +55,7 @@ public class ClaseServiceImplements implements ClaseService {
      */
     @Override
     @Transactional
+    @RolesAllowed("PROFESOR")
     public ClaseResponseDTO crearClase(ClaseRequestDTO request) {
         LOGGER.infof("Intentando crear clase con nombre='%s'", request.nombre());
         // Verificar existencia previa
@@ -75,12 +78,12 @@ public class ClaseServiceImplements implements ClaseService {
      * @return Lista de DTOs con todas las clases registradas
      */
     @Override
+    @Authenticated
     public List<ClaseResponseDTO> listarClases() {
         LOGGER.info("Listando todas las clases");
         List<Clase> clases = claseRepository.findAllClases();
         return clases.stream()
-                .map(claseMapper::toResponse)
-                .collect(Collectors.toList());
+                .map(claseMapper::toResponse).toList();
     }
 
 
@@ -92,6 +95,7 @@ public class ClaseServiceImplements implements ClaseService {
      * @throws ClaseNotFoundException si no se encuentra la clase con el ID especificado
      */
     @Override
+    @Authenticated
     public ClaseResponseDTO obtenerClasePorId(Long id) {
         LOGGER.infof("Obteniendo clase con ID=%d", id);
         Clase entity = claseRepository.findClaseById(id)
@@ -114,6 +118,7 @@ public class ClaseServiceImplements implements ClaseService {
      */
     @Override
     @Transactional
+    @RolesAllowed("PROFESOR")
     public ClaseResponseDTO actualizarClase(Long id, ClaseRequestDTO request) {
         LOGGER.infof("Actualizando clase con ID=%d", id);
         Clase entity = claseRepository.findClaseById(id)
@@ -137,6 +142,7 @@ public class ClaseServiceImplements implements ClaseService {
      */
     @Override
     @Transactional
+    @RolesAllowed("PROFESOR")
     public void eliminarClase(Long id) {
         LOGGER.infof("Eliminando clase con ID=%d", id);
         Clase claseDeleted = claseRepository.findClaseById(id)

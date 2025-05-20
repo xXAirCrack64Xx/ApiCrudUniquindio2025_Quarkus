@@ -38,9 +38,6 @@ public class ProgramaResource {
     private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
     private final ProgramaService programaService;
 
-    @Inject
-    EmailService emailService;
-
     @Context
     UriInfo uriInfo;
 
@@ -146,7 +143,7 @@ public class ProgramaResource {
             @PathParam("idPrograma") Long idPrograma,
             @Valid ComentarioRequestDTO request) {
 
-        LOGGER.infof("Comentando programa ID=%d por profesor ID=%d", idPrograma, request.idProfesor());
+        LOGGER.infof("Comentando programa ID=%d por profesor ID=%d", idPrograma);
 
         ComentarioResponseDTO resultado = programaService.comentarPrograma(idPrograma, request);
         AUDIT_LOGGER.infof("Comentario actualizado programa ID=%d", idPrograma);

@@ -8,9 +8,6 @@ import jakarta.validation.constraints.NotNull;
  */
 public record ComentarioRequestDTO(
 
-        @NotNull(message = "El ID del profesor es obligatorio")
-        Long idProfesor,
-
         @NotBlank(message = "El comentario no puede estar vacío")
         String comentario
 

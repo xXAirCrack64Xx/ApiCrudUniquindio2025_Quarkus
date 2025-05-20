@@ -13,12 +13,14 @@ import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger; // Cambio clave aquí
@@ -41,8 +43,7 @@ public class UsuarioServiceImplements implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
 
-    @Inject
-    EmailService emailService;
+    private final EmailService emailService;
 
     /**
      * Obtiene un usuario activo por su identificador.
@@ -72,6 +73,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      * @throws NoUsuariosRegistradosException Si no hay usuarios registrados.
      */
     @Override
+    @RolesAllowed("PROFESOR")
     public PaginacionUserResponseDTO getAllUsuariosPaginados(int page, int size) {
         LOGGER.infov("Obteniendo usuarios paginados - Página: {0}, Tamaño: {1}", page, size);
 
@@ -85,8 +87,7 @@ public class UsuarioServiceImplements implements UsuarioService {
         }
 
         List<UsuarioResponseDTO> usuariosDTO = usuarios.stream()
-                .map(usuarioMapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .map(usuarioMapper::toResponseDTO).toList();
 
         PaginacionUserResponseDTO response = new PaginacionUserResponseDTO(usuariosDTO, page, totalPaginas, totalUsuarios, size);
         LOGGER.infov("Paginación exitosa - Total usuarios: {0}, Páginas: {1}", totalUsuarios, totalPaginas);

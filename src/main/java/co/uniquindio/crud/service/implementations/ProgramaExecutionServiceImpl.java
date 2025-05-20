@@ -6,6 +6,8 @@ import co.uniquindio.crud.exception.program.ProgramExecutionException;
 import co.uniquindio.crud.exception.program.ProgramaNotFoundException;
 import co.uniquindio.crud.repository.ProgramaRepository;
 import co.uniquindio.crud.service.interfaces.ProgramaExecutionService;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -37,6 +39,7 @@ public class ProgramaExecutionServiceImpl implements ProgramaExecutionService {
      */
     @Override
     @Transactional
+    @Authenticated
     public ExecutionResponseDTO ejecutarPrograma(Long programaId) {
         LOGGER.infof("Ejecutando programa ID=%d", programaId);
 
