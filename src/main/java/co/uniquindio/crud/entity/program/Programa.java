@@ -41,6 +41,9 @@ public class Programa {
     @Enumerated(EnumType.STRING)
     private EstadoPrograma estadoPrograma;
 
+    @Enumerated(EnumType.STRING)
+    private TipoPrograma tipoPrograma;
+
     @ManyToOne(optional = false)
     private Usuario autor;
 

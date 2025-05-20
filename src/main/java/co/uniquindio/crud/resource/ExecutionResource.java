@@ -15,7 +15,6 @@ import org.jboss.logging.Logger;
 public class ExecutionResource {
 
     private static final Logger LOGGER = Logger.getLogger(ExecutionResource.class);
-    private static final Logger AUDIT_LOGGER = Logger.getLogger("audit");
 
     private final ProgramaExecutionService executionService;
 

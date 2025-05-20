@@ -47,7 +47,6 @@ public class ProgramaServiceImpl implements ProgramaService {
     private final EmailService emailService;
 
 
-
     @Override
     @Transactional
     @Authenticated
@@ -60,7 +59,10 @@ public class ProgramaServiceImpl implements ProgramaService {
             throw new ProgramaAlreadyExistsException(request.titulo());
         }
 
-        Usuario autor = usuarioRepository.findActiveById(request.autorId());
+        long autorId = securityUtils.getUserId().orElseThrow(() ->
+                new UsuarioNotFoundException(0L));
+
+        Usuario autor = usuarioRepository.findActiveById(autorId);
         Programa entity = programaMapper.toEntity(request, autor);
         programaRepository.persist(entity);
         AUDIT_LOGGER.infof("Programa creado con ID=%d", entity.getId());
@@ -68,6 +70,7 @@ public class ProgramaServiceImpl implements ProgramaService {
     }
 
     @Override
+    @Authenticated
     public PagedResponse<ProgramaResponseDTO> listarProgramas(int page, int size) {
         LOGGER.infof("Listando programas página=%d, tamaño=%d", page, size);
         long total = programaRepository.count();
@@ -75,13 +78,13 @@ public class ProgramaServiceImpl implements ProgramaService {
                 .page(page - 1, size)
                 .list()
                 .stream()
-                .map(programaMapper::toResponse)
-                .collect(Collectors.toList());
+                .map(programaMapper::toResponse).toList();
         int totalPages = (int) Math.ceil((double) total / size);
         return new PagedResponse<>(items, page, size, total, totalPages);
     }
 
     @Override
+    @Authenticated
     public ProgramaResponseDTO obtenerProgramaPorId(Long id) {
         LOGGER.infof("Obteniendo programa con ID=%d", id);
         Programa entity = programaRepository.findByIdOptional(id)
@@ -91,6 +94,7 @@ public class ProgramaServiceImpl implements ProgramaService {
 
     @Override
     @Transactional
+    @Authenticated
     public ProgramaResponseDTO actualizarPrograma(Long id, ProgramaRequestDTO request) {
         LOGGER.infof("Actualizando programa con ID=%d", id);
         Programa entity = programaRepository.findByIdOptional(id)
@@ -103,6 +107,7 @@ public class ProgramaServiceImpl implements ProgramaService {
 
     @Override
     @Transactional
+    @Authenticated
     public void eliminarPrograma(Long id) {
         LOGGER.infof("Eliminando programa con ID=%d", id);
         boolean deleted = programaRepository.deleteById(id);
@@ -116,6 +121,7 @@ public class ProgramaServiceImpl implements ProgramaService {
 
     @Transactional
     @Override
+    @RolesAllowed("PROFESOR")
     public String calificarPrograma(Long idPrograma, Long notaNueva) {
 
         LOGGER.infof("Calificando programa con ID=%d", idPrograma);

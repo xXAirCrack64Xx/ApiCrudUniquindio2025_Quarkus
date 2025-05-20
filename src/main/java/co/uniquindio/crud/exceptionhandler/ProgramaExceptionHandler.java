@@ -10,7 +10,7 @@ import org.jboss.logging.Logger;
 @Provider
 public class ProgramaExceptionHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(GlobalExceptionHandler.class);
+    private static final Logger LOGGER = Logger.getLogger(ProgramaExceptionHandler.class);
 
     @Provider
     public static class ProgramaNotFoundMapper implements ExceptionMapper<ProgramaNotFoundException> {

@@ -3,25 +3,29 @@ package co.uniquindio.crud.service.emailService;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
+import org.jboss.logging.Logger;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 @ApplicationScoped
+@RequiredArgsConstructor(onConstructor = @__({@Inject}))
 public class EmailService {
 
-    @Inject
     @ConfigProperty(name = "mail.smtp.user")
     String remitente;
 
-    @Inject
     @ConfigProperty(name = "mail.smtp.password")
     String claveApp;
 
     private Session session;
+
+    private static final Logger LOGGER = Logger.getLogger(EmailService.class);
 
 
     @PostConstruct
@@ -44,6 +48,7 @@ public class EmailService {
         props.put("mail.debug", "true");
 
         session = Session.getInstance(props, new Authenticator() {
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(remitente, claveApp);
             }
@@ -100,10 +105,9 @@ public class EmailService {
             msg.setContent(htmlBody, "text/html; charset=utf-8");
 
             Transport.send(msg);
-            System.out.println("✅ Correo enviado a " + destinatario);
+            LOGGER.info("✅ Correo enviado a " + destinatario);
         } catch (MessagingException | UnsupportedEncodingException e) {
-            System.err.println("❌ Error al enviar correo: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("❌ Error al enviar correo: " + e.getMessage());
         }
     }
 }

@@ -13,6 +13,7 @@ import co.uniquindio.crud.repository.UsuarioRepository;
 import co.uniquindio.crud.service.emailService.EmailService;
 import co.uniquindio.crud.service.mappers.UsuarioMapper;
 import co.uniquindio.crud.service.interfaces.UsuarioService;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -53,6 +54,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      * @throws UsuarioNotFoundException Si no se encuentra el usuario.
      */
     @Override
+    @Authenticated
     public UsuarioResponseDTO getUsuarioById(Long id) {
         LOGGER.infov("Buscando usuario con ID: {0}", id);
         Usuario usuario = usuarioRepository.findActiveById(id);
@@ -139,6 +141,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      */
     @Transactional
     @Override
+    @Authenticated
     public UsuarioResponseDTO updateUsuario(Long id, UsuarioDTO usuarioDTO) {
         LOGGER.infov("Actualizando usuario con ID: {0}", id);
 
@@ -172,6 +175,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      */
     @Transactional
     @Override
+    @Authenticated
     public UsuarioResponseDTO partialUpdateUsuario(Long id, ParcialUserUpdate dto) {
         LOGGER.infov("Inicio actualización parcial para usuario con ID: {0}", id);
         Usuario usuario = usuarioRepository.findActiveById(id);
@@ -225,6 +229,7 @@ public class UsuarioServiceImplements implements UsuarioService {
      */
     @Transactional
     @Override
+    @Authenticated
     public void deleteUsuario(Long id) {
         LOGGER.infov("Eliminando usuario con ID: {0}", id);
 
@@ -241,6 +246,7 @@ public class UsuarioServiceImplements implements UsuarioService {
     // hola
 
     @Override
+    @Authenticated
     public UsuarioResponseDTO findbyemail (String email){
         Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsuarioNotFoundException(email));
         return usuarioMapper.toResponseDTO(usuario);
