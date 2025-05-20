@@ -140,7 +140,7 @@ public class ProgramaServiceImpl implements ProgramaService {
 
         // apartado de envío del correo
         Usuario user = entity.getAutor();
-        emailService.enviarCorreo(user.getEmail(), "Su programa ha sido calificado por el profesor");
+        emailService.enviarCorreo(user.getEmail(), "Su programa ha sido calificado por el profesor, nota: " + notaNueva);
 
 
         return "Nota actualizada correctamente para el programa '" + entity.getTitulo() + "', nota: " + notaNueva;
@@ -179,7 +179,8 @@ public class ProgramaServiceImpl implements ProgramaService {
 
             // apartado de envío del correo
             Usuario user = entity.getAutor();
-            emailService.enviarCorreo(user.getEmail(), "Su programa ha sido comentado por el profesor");
+            emailService.enviarCorreo(user.getEmail(), "Su programa ha sido comentado por el profesor: " +
+                    user.getNombre() + ", comentario: '" + coment.getComentario() + "'");
 
 
             return comentarioMapper.toResponse(coment);

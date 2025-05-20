@@ -9,7 +9,9 @@ public record ProgramaEjemploRequestDto (
         String descripcion,
         @NotBlank(message = "El código fuente es obligatorio")
         String codigoFuente,
+        @NotBlank(message = "La dificultad es obligatoria")
         String dificultad,
+        @NotBlank(message = "El tema es obligatorio")
         String tema
 ){
 }
